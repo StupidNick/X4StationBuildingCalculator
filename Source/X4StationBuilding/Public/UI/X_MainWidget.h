@@ -6,7 +6,7 @@
 #include "X_MainWidget.generated.h"
 
 
-struct FNameAndNumbers;
+struct FObjectInfo;
 class UEditableText;
 class UTextBlock;
 class UX_DropDownMenu;
@@ -21,7 +21,7 @@ public:
 
 	virtual void NativeOnInitialized() override;
 
-	void SetStationsAndCount(TArray<FNameAndNumbers> InStations);
+	void SetStationsAndCount(TArray<FObjectInfo> InStations);
 	void ClearSelectedStationsList();
 	void SetResult(FResult InResult);
 
@@ -36,7 +36,7 @@ private:
 	UFUNCTION()
 	void OnClearSelectedListButtonClicked();
 
-	FString GetStringFromNamesAndNumbers(TArray<FNameAndNumbers> InStations);
+	FString GetStringFromNamesAndNumbers(TArray<FObjectInfo> InStations);
 
 public:
 
@@ -54,7 +54,10 @@ public:
 	UTextBlock* SelectedStationsList;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UTextBlock* OutProducts;
+	UTextBlock* NecessaryProducts;
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UTextBlock* ResultProducts;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UTextBlock* OutStations;

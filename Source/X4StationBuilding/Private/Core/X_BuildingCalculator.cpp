@@ -1,5 +1,4 @@
 #include "Core/X_BuildingCalculator.h"
-#include "XDA_Stations.h"
 #include "X_HUD.h"
 #include "Service/X_Types.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,7 +33,7 @@ void AX_BuildingCalculator::AddStationsToList(FName InName, int32 InNums)
 	}
 	if (InNums <= 0) return;
 	
-	SelectedStations.Add(FNameAndNumbers(InName, InNums));
+	SelectedStations.Add(FObjectInfo(InName, InNums));
 	OnSelectedStationAdded.ExecuteIfBound(SelectedStations);
 }
 
@@ -55,8 +54,14 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 	FResult Result;
 	for (const auto Station : SelectedStations) // Test more then one station 
 	{
+		const FStationInfo TargetStationInfo = StationsDA->FindStationByName(Station.Name);
+		if (TargetStationInfo.StationName == "None" || TargetStationInfo.ConsumedProducts.IsEmpty()) return;
+		
+		AddStationToResult(TargetStationInfo, Station.Numbers * TargetStationInfo.ManufacturedProduct.Numbers, Result);
 		CalculateStationsAndProducts(Station.Name, Station.Numbers, Result);
 	}
+	
+	CalculateResultProducts(Result);
 	
 	OnResultCalculated.ExecuteIfBound(Result);
 }
@@ -97,11 +102,11 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 	{
 		if (ConsumedProduct.Name == "None") continue;
 		
-		FNameAndNumbers* CurrentProductions;
-		if (!Result.FindProductionsByName(ConsumedProduct.Name, CurrentProductions))
+		FObjectInfo* CurrentProductions;
+		if (!Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions))
 		{
 			AddProductToResult(ConsumedProduct, InTargetStationsNumber, Result);
-			Result.FindProductionsByName(ConsumedProduct.Name, CurrentProductions);
+			Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions);
 		}
 		else
 		{
@@ -112,7 +117,7 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 		if (ProductManufacturedStation.StationName == "None") continue;
 		UE_LOG(LogTemp, Log, TEXT("Consumed product: %s x%i"), *ConsumedProduct.Name.ToString(), ConsumedProduct.Numbers);
 
-		FNameAndNumbers* CurrentStations;
+		FObjectInfo* CurrentStations;
 		if (!Result.FindStationByName(ProductManufacturedStation.StationName, CurrentStations))
 		{
 			AddStationToResult(ProductManufacturedStation, CurrentProductions->Numbers, Result);
@@ -131,18 +136,25 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 	}
 }
 
-void AX_BuildingCalculator::AddProductToResult(FNameAndNumbers InConsumedProduct, int32 InTargetStationsNumber,
+void AX_BuildingCalculator::AddProductToResult(FObjectInfo InConsumedProduct, int32 InTargetStationsNumber,
 	FResult& Result)
 {
-	FNameAndNumbers CurrentProductions;
+	FObjectInfo CurrentProductions;
 	CurrentProductions.Name = InConsumedProduct.Name;
 	CurrentProductions.Numbers = InConsumedProduct.Numbers * InTargetStationsNumber;
-	Result.ResultProductions.Add(CurrentProductions);
+	Result.NecessaryProducts.Add(CurrentProductions);
 }
 
 void AX_BuildingCalculator::AddStationToResult(FStationInfo InManufacturedStation, int32 InProductsNumbers, FResult& Result)
 {
-	FNameAndNumbers CurrentStation;
+	FObjectInfo* ExistStation;
+	if (Result.FindStationByName(InManufacturedStation.StationName, ExistStation))
+	{
+		ExistStation->Numbers += CalculateNeededNumbersOfStations(InProductsNumbers, InManufacturedStation);
+		return;
+	}
+	
+	FObjectInfo CurrentStation;
 	CurrentStation.Name = InManufacturedStation.StationName;
 	CurrentStation.Numbers = CalculateNeededNumbersOfStations(InProductsNumbers, InManufacturedStation);
 	Result.ResultStations.Add(CurrentStation);
@@ -152,4 +164,26 @@ int32 AX_BuildingCalculator::CalculateNeededNumbersOfStations(int32 NeededProduc
 	FStationInfo ManufacturedStation)
 {
 	return FMath::CeilToInt32(static_cast<float>(NeededProductsNumbers) / static_cast<float>(ManufacturedStation.ManufacturedProduct.Numbers));
+}
+
+void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
+{
+	for (const auto Station : Result.ResultStations)
+	{
+		FStationInfo CurrentStation = StationsDA->FindStationByName(Station.Name);
+		if (CurrentStation.StationName == "None") return;
+
+		FObjectInfo* ManufacturedProducts;
+		if (Result.FindResultProductsByName(CurrentStation.ManufacturedProduct.Name, ManufacturedProducts))
+		{
+			ManufacturedProducts->Numbers += Station.Numbers * CurrentStation.ManufacturedProduct.Numbers;
+		}
+		else
+		{
+			FObjectInfo Temp;
+			Temp.Name = CurrentStation.ManufacturedProduct.Name;
+			Temp.Numbers = Station.Numbers * CurrentStation.ManufacturedProduct.Numbers;
+			Result.ResultProducts.Add(Temp);
+		}
+	}
 }

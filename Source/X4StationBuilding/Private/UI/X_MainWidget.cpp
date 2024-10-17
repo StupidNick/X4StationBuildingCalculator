@@ -43,7 +43,7 @@ void UX_MainWidget::OnClearSelectedListButtonClicked()
 	OnClearSelectedListButtonClickedEvent.ExecuteIfBound();
 }
 
-FString UX_MainWidget::GetStringFromNamesAndNumbers(TArray<FNameAndNumbers> InStations)
+FString UX_MainWidget::GetStringFromNamesAndNumbers(TArray<FObjectInfo> InStations)
 {
 	FString Result;
 	for (auto Station : InStations)
@@ -56,7 +56,7 @@ FString UX_MainWidget::GetStringFromNamesAndNumbers(TArray<FNameAndNumbers> InSt
 	return Result;
 }
 
-void UX_MainWidget::SetStationsAndCount(TArray<FNameAndNumbers> InStations)
+void UX_MainWidget::SetStationsAndCount(TArray<FObjectInfo> InStations)
 {
 	SelectedStationsList->SetText(FText::FromString(GetStringFromNamesAndNumbers(InStations)));
 }
@@ -70,8 +70,10 @@ void UX_MainWidget::ClearSelectedStationsList()
 
 void UX_MainWidget::SetResult(FResult InResult)
 {
-	OutProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultProductions)));
+	NecessaryProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.NecessaryProducts)));
 	OutStations->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultStations)));
+	ResultProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultProducts)));
+	// TODO make result info with drop down buttons
 }
 
 void UX_MainWidget::PrintError(FText InText) const

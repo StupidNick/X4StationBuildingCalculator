@@ -6,25 +6,46 @@
 
 
 USTRUCT()
-struct FNameAndNumbers
+struct FObjectInfo
 {
 	GENERATED_BODY()
 
-	FNameAndNumbers()
-	{}
-	FNameAndNumbers(FName InName, int32 InNumbers)
+	FObjectInfo(){}
+	FObjectInfo(FName InName, int32 InNumbers)
 	{
 		Name = InName;
 		Numbers = InNumbers;
 	}
 
-	bool operator==(const FNameAndNumbers& left) const
+	bool operator==(const FObjectInfo& left) const
 	{
-		return left.Name == Name && left.Numbers == Numbers;
+		return left.Name == Name && left.Numbers == Numbers && left.Cost == Cost;
 	}
 
 	UPROPERTY(EditAnywhere)
 	FName Name;
+	UPROPERTY(EditAnywhere)
+	int32 Numbers;
+	UPROPERTY(EditAnywhere)
+	int32 Cost;
+};
+
+USTRUCT()
+struct FObjectFromStation
+{
+	GENERATED_BODY()
+
+	FObjectFromStation(const FName StationName, const FName ObjectName, int32 Numbers)
+		: StationName(StationName),
+		  ObjectName(ObjectName),
+		  Numbers(Numbers)
+	{
+	}
+
+	UPROPERTY(EditAnywhere)
+	FName StationName;
+	UPROPERTY(EditAnywhere)
+	FName ObjectName;
 	UPROPERTY(EditAnywhere)
 	int32 Numbers;
 };
@@ -34,14 +55,23 @@ struct FStationInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
 	FName StationName;
 
-	UPROPERTY(EditDefaultsOnly)
-	TArray<FNameAndNumbers> ConsumedProducts;
+	UPROPERTY(EditDefaultsOnly, Category = "Manufacturing")
+	TArray<FObjectInfo> ConsumedProducts;
 
-	UPROPERTY(EditDefaultsOnly)
-	FNameAndNumbers ManufacturedProduct;
+	UPROPERTY(EditDefaultsOnly, Category = "Manufacturing")
+	FObjectInfo ManufacturedProduct;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Manufacturing")
+	int32 WorkforceNumber;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Manufacturing")
+	float MaxEfficiency;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Building")
+	TArray<FObjectInfo> ObjectsForBuilding;
 };
 
 USTRUCT()
@@ -49,25 +79,44 @@ struct FResult
 {
 	GENERATED_BODY()
 
-	TArray<FNameAndNumbers> ResultProductions;
-	TArray<FNameAndNumbers> ResultStations;
+	TArray<FObjectInfo> ResultProducts;
+	TArray<FObjectInfo> NecessaryProducts;
+	
+	TArray<FObjectInfo> ResultStations;
 
-	bool FindProductionsByName(FName InName, FNameAndNumbers*& OutProduction)
+	TArray<FObjectFromStation> ProductsByStations;
+
+	bool FindNecessaryProductsByName(FName InName, FObjectInfo*& OutProduction)
 	{
-		if (ResultProductions.IsEmpty()) return false;
+		if (NecessaryProducts.IsEmpty()) return false;
 		
-		for (int i = 0; i < ResultProductions.Num(); i++)
+		for (int i = 0; i < NecessaryProducts.Num(); i++)
 		{
-			if (ResultProductions[i].Name == InName)
+			if (NecessaryProducts[i].Name == InName)
 			{
-				OutProduction = &ResultProductions[i];
+				OutProduction = &NecessaryProducts[i];
 				return true;
 			}
 		}
 		return false;
 	}
 
-	bool FindStationByName(FName InName, FNameAndNumbers*& OutStation)
+	bool FindResultProductsByName(FName InName, FObjectInfo*& OutProduction)
+	{
+		if (ResultProducts.IsEmpty()) return false;
+		
+		for (int i = 0; i < ResultProducts.Num(); i++)
+		{
+			if (ResultProducts[i].Name == InName)
+			{
+				OutProduction = &ResultProducts[i];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool FindStationByName(FName InName, FObjectInfo*& OutStation)
 	{
 		if (ResultStations.IsEmpty()) return false;
 		
@@ -85,5 +134,5 @@ struct FResult
 
 DECLARE_DELEGATE_OneParam(FTextDelegate, FText)
 DECLARE_DELEGATE_TwoParams(FNameIntDelegate, FName, int32);
-DECLARE_DELEGATE_OneParam(FArrayStationsDelegate, TArray<FNameAndNumbers>);
+DECLARE_DELEGATE_OneParam(FArrayStationsDelegate, TArray<FObjectInfo>);
 DECLARE_DELEGATE_OneParam(FResultDelegate, FResult);

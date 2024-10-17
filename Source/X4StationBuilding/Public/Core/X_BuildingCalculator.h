@@ -7,6 +7,7 @@
 #include "X_BuildingCalculator.generated.h"
 
 
+class UX_ObjectsDA;
 class AX_HUD;
 class UXDA_Stations;
 
@@ -25,9 +26,10 @@ protected:
 
 private:
 	void CalculateStationsAndProducts(FName InTargetStationName, int32 InTargetStationsNumber, FResult& Result);
-	void AddProductToResult(FNameAndNumbers InConsumedProduct, int32 InTargetStationsNumber, FResult& Result);
+	void AddProductToResult(FObjectInfo InConsumedProduct, int32 InTargetStationsNumber, FResult& Result);
 	void AddStationToResult(FStationInfo InManufacturedStation, int32 InProductsNumbers, FResult& Result);
 	int32 CalculateNeededNumbersOfStations(int32 NeededProductsNumbers, FStationInfo ManufacturedStation);
+	void CalculateResultProducts(FResult& Result);
 
 public:
 
@@ -38,11 +40,13 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UXDA_Stations* StationsDA;
+	UPROPERTY(EditAnywhere)
+	UX_ObjectsDA* ObjectsDA;
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxNumsOfStations = 200;
 
-	TArray<FNameAndNumbers> SelectedStations;
+	TArray<FObjectInfo> SelectedStations;
 
 	UPROPERTY()
 	AX_HUD* HUD = nullptr;

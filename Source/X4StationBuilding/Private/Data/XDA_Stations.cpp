@@ -6,7 +6,7 @@ FStationInfo UXDA_Stations::FindStationByName(FName InName)
 {
 	FStationInfo Result;
 	Result.StationName = "None";
-	Result.ManufacturedProduct = FNameAndNumbers();
+	Result.ManufacturedProduct = FObjectInfo();
 	if (Stations.IsEmpty()) return Result;
 	
 	for (auto Element : Stations)
@@ -23,7 +23,7 @@ FStationInfo UXDA_Stations::FindStationByManufacturedProduct(FName InName)
 {
 	FStationInfo Result;
 	Result.StationName = "None";
-	Result.ManufacturedProduct = FNameAndNumbers();
+	Result.ManufacturedProduct = FObjectInfo();
 	if (Stations.IsEmpty()) return Result;
 
 	for (auto Element : Stations)

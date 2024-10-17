@@ -22,7 +22,7 @@ void AX_HUD::SetCalculator(AX_BuildingCalculator* InCalculator)
 
 		MainWidget->PrintError(InText);
 	});
-	Calculator->OnSelectedStationAdded.BindLambda([&](TArray<FNameAndNumbers> InStationsArray)
+	Calculator->OnSelectedStationAdded.BindLambda([&](TArray<FObjectInfo> InStationsArray)
 	{
 		if (!MainWidget) return;
 		
