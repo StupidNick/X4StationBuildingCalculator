@@ -3,10 +3,10 @@
 
 
 
-void UX_NameWithAmountWD::SetInfo(FName InNameObject, int32 InAmountObjects)
+void UX_NameWithAmountWD::SetInfo(const FText& InNameObject, int32 InAmountObjects) const
 {
 	if (!NameTextBlock || !AmountTextBlock) return;
 
-	NameTextBlock->SetText(FText::FromName(InNameObject));
+	NameTextBlock->SetText(InNameObject);
 	AmountTextBlock->SetText(FText::AsNumber(InAmountObjects));
 }

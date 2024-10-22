@@ -1,33 +1,35 @@
 #include "X_ObjectsListWD.h"
 #include "X_NameWithAmountWD.h"
 #include "X_ObjectsDA.h"
+#include "Components/TextBlock.h"
+#include "Components/VerticalBox.h"
+#include "Styling/SlateColor.h"
 
 
-void UX_ObjectsListWD::CreateList(FResult& InResult)
+void UX_ObjectsListWD::CreateList(const TArray<FStationManufacturedInfo>& InManufacturedStations, const TArray<FStationManufacturedInfo>& InConsumedStations)
 {
-	if (InResult.NecessaryProducts.IsEmpty() || InResult.ResultProducts.IsEmpty()) return;
+	Lines.Empty();
+	
+	CreateNewLine(InManufacturedStations);
+	CreateNewLine(InConsumedStations);
+}
 
-	for (const auto Object : InResult.ResultProducts)
+void UX_ObjectsListWD::CreateNewLine(const TArray<FStationManufacturedInfo>& InStations)
+{
+	for (const auto Station : InStations)
 	{
 		UX_NameWithAmountWD* NewLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
 		if (!NewLine) return;
 
-		FObjectInfo* NecessaryProducts;
-		if (InResult.FindNecessaryProductsByName(Object.Name, NecessaryProducts))
-		{
-			const int32 Amount = Object.Numbers - NecessaryProducts->Numbers;
-		}
-		else
-		{
-			
-		}
+		NewLine->NameTextBlock->SetColorAndOpacity(FLinearColor(0.0f, 1.0f, 0.0f));
 
-		NewLine->SetInfo(Object.StationName);
-		NewLine->OnButtonPressedEvent.BindLambda([&](FText InText)
-		{
-			OnStationSelected.ExecuteIfBound(InText);
-		});
+		FString Name = FString::FromInt(Station.StationsNumber);
+		Name.Append(" ");
+		Name.Append(Station.StationName.ToString());
+		
+		NewLine->SetInfo(FText::FromString(Name), Station.ObjectsNumber);
+
 		VerticalBox->AddChild(NewLine);
-		Buttons.Add(NewLine);
+		Lines.Add(NewLine);
 	}
 }

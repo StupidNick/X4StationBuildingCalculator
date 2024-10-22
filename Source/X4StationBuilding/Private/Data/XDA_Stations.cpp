@@ -2,9 +2,9 @@
 
 
 
-FStationInfo UXDA_Stations::FindStationByName(FName InName)
+FStationData UXDA_Stations::FindStationByName(FName InName)
 {
-	FStationInfo Result;
+	FStationData Result;
 	Result.StationName = "None";
 	Result.ManufacturedProduct = FObjectInfo();
 	if (Stations.IsEmpty()) return Result;
@@ -19,9 +19,9 @@ FStationInfo UXDA_Stations::FindStationByName(FName InName)
 	return Result;
 }
 
-FStationInfo UXDA_Stations::FindStationByManufacturedProduct(FName InName)
+FStationData UXDA_Stations::FindStationByManufacturedProduct(FName InName)
 {
-	FStationInfo Result;
+	FStationData Result;
 	Result.StationName = "None";
 	Result.ManufacturedProduct = FObjectInfo();
 	if (Stations.IsEmpty()) return Result;

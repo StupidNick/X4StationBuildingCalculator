@@ -18,7 +18,7 @@ class X4STATIONBUILDING_API UX_DropDownButton : public UUserWidget
 
 public:
 
-	void Initialize(FName InName, FResult& InResult);
+	void InitializeWidget(FName InName, FResult& InResult);
 
 private:
 	virtual void NativeOnInitialized() override;
@@ -38,7 +38,10 @@ public:
 	UButton* OpenButton;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UTextBlock* ButtonTextBlock;
+	UTextBlock* NameTextBlock;
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UTextBlock* AmountTextBlock;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UX_ObjectsListWD> ListClass;

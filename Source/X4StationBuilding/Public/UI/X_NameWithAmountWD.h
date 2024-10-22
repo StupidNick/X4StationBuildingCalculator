@@ -14,7 +14,7 @@ class X4STATIONBUILDING_API UX_NameWithAmountWD : public UUserWidget
 
 public:
 
-	void SetInfo(FName InNameObject, int32 InAmountObjects);
+	void SetInfo(const FText& InNameObject, int32 InAmountObjects) const;
 
 public:
 

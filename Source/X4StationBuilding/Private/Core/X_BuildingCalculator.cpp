@@ -39,13 +39,7 @@ void AX_BuildingCalculator::AddStationsToList(FName InName, int32 InNums)
 
 void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 {
-	if (!StationsDA)
-	{
-		OnErrorDelegate.ExecuteIfBound(FText::FromString("You didn't select any station!"));
-		return;
-	}
-
-	if (SelectedStations.IsEmpty())
+	if (!StationsDA || SelectedStations.IsEmpty())
 	{
 		OnErrorDelegate.ExecuteIfBound(FText::FromString("You didn't select any station!"));
 		return;
@@ -54,7 +48,7 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 	FResult Result;
 	for (const auto Station : SelectedStations) // Test more then one station 
 	{
-		const FStationInfo TargetStationInfo = StationsDA->FindStationByName(Station.Name);
+		const FStationData TargetStationInfo = StationsDA->FindStationByName(Station.Name);
 		if (TargetStationInfo.StationName == "None" || TargetStationInfo.ConsumedProducts.IsEmpty()) return;
 		
 		AddStationToResult(TargetStationInfo, Station.Numbers * TargetStationInfo.ManufacturedProduct.Numbers, Result);
@@ -94,7 +88,7 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 {
 	if (!StationsDA || InTargetStationsNumber <= 0) return;
 
-	const FStationInfo TargetStationInfo = StationsDA->FindStationByName(InTargetStationName);
+	const FStationData TargetStationInfo = StationsDA->FindStationByName(InTargetStationName);
 	if (TargetStationInfo.StationName == "None" || TargetStationInfo.ConsumedProducts.IsEmpty()) return;
 	UE_LOG(LogTemp, Warning, TEXT("Target station: %s x%i"), *TargetStationInfo.StationName.ToString(), InTargetStationsNumber);
 	
@@ -113,7 +107,7 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 			CurrentProductions->Numbers += InTargetStationsNumber * ConsumedProduct.Numbers;
 		}
 		
-		const FStationInfo ProductManufacturedStation = StationsDA->FindStationByManufacturedProduct(ConsumedProduct.Name);
+		const FStationData ProductManufacturedStation = StationsDA->FindStationByManufacturedProduct(ConsumedProduct.Name);
 		if (ProductManufacturedStation.StationName == "None") continue;
 		UE_LOG(LogTemp, Log, TEXT("Consumed product: %s x%i"), *ConsumedProduct.Name.ToString(), ConsumedProduct.Numbers);
 
@@ -127,7 +121,7 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 		else
 		{
 			const int32 NewStationsNumber = CalculateNeededNumbersOfStations(CurrentProductions->Numbers, ProductManufacturedStation);
-			if (CurrentStations->Numbers == NewStationsNumber) continue;
+			if (CurrentStations->Numbers >= NewStationsNumber) continue;
 			
 			CalculateStationsAndProducts(ProductManufacturedStation.StationName, NewStationsNumber - CurrentStations->Numbers, Result);
 			CurrentStations->Numbers = NewStationsNumber;
@@ -145,7 +139,7 @@ void AX_BuildingCalculator::AddProductToResult(FObjectInfo InConsumedProduct, in
 	Result.NecessaryProducts.Add(CurrentProductions);
 }
 
-void AX_BuildingCalculator::AddStationToResult(FStationInfo InManufacturedStation, int32 InProductsNumbers, FResult& Result)
+void AX_BuildingCalculator::AddStationToResult(FStationData InManufacturedStation, int32 InProductsNumbers, FResult& Result)
 {
 	FObjectInfo* ExistStation;
 	if (Result.FindStationByName(InManufacturedStation.StationName, ExistStation))
@@ -161,7 +155,7 @@ void AX_BuildingCalculator::AddStationToResult(FStationInfo InManufacturedStatio
 }
 
 int32 AX_BuildingCalculator::CalculateNeededNumbersOfStations(int32 NeededProductsNumbers,
-	FStationInfo ManufacturedStation)
+	FStationData ManufacturedStation)
 {
 	return FMath::CeilToInt32(static_cast<float>(NeededProductsNumbers) / static_cast<float>(ManufacturedStation.ManufacturedProduct.Numbers));
 }
@@ -170,7 +164,7 @@ void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
 {
 	for (const auto Station : Result.ResultStations)
 	{
-		FStationInfo CurrentStation = StationsDA->FindStationByName(Station.Name);
+		FStationData CurrentStation = StationsDA->FindStationByName(Station.Name);
 		if (CurrentStation.StationName == "None") return;
 
 		FObjectInfo* ManufacturedProducts;

@@ -31,27 +31,31 @@ struct FObjectInfo
 };
 
 USTRUCT()
-struct FObjectFromStation
+struct FStationManufacturedInfo
 {
 	GENERATED_BODY()
 
-	FObjectFromStation(const FName StationName, const FName ObjectName, int32 Numbers)
-		: StationName(StationName),
+	FStationManufacturedInfo(){}
+
+	FStationManufacturedInfo(const FName StationName, const FName ObjectName, int32 Numbers)
+		: StationName(StationName), StationsNumber(0),
 		  ObjectName(ObjectName),
-		  Numbers(Numbers)
+		  ObjectsNumber(Numbers)
 	{
 	}
 
 	UPROPERTY(EditAnywhere)
 	FName StationName;
 	UPROPERTY(EditAnywhere)
+	int32 StationsNumber;
+	UPROPERTY(EditAnywhere)
 	FName ObjectName;
 	UPROPERTY(EditAnywhere)
-	int32 Numbers;
+	int32 ObjectsNumber;
 };
 
 USTRUCT()
-struct FStationInfo
+struct FStationData
 {
 	GENERATED_BODY()
 
@@ -84,7 +88,8 @@ struct FResult
 	
 	TArray<FObjectInfo> ResultStations;
 
-	TArray<FObjectFromStation> ProductsByStations;
+	TArray<FStationManufacturedInfo> StationsConsumedProducts;
+	TArray<FStationManufacturedInfo> StationsManufacturedProducts;
 
 	bool FindNecessaryProductsByName(FName InName, FObjectInfo*& OutProduction)
 	{
@@ -129,6 +134,34 @@ struct FResult
 			}
 		}
 		return false;
+	}
+
+	TArray<FStationManufacturedInfo> FindAllManufacturedStationsByProductName(const FName InProductName)
+	{
+		TArray<FStationManufacturedInfo> Result;
+		
+		for (auto Station : StationsManufacturedProducts)
+		{
+			if (Station.ObjectName == InProductName)
+			{
+				Result.Add(Station);
+			}
+		}
+		return Result;
+	}
+
+	TArray<FStationManufacturedInfo> FindAllConsumedStationsByProductName(const FName InProductName)
+	{
+		TArray<FStationManufacturedInfo> Result;
+		
+		for (auto Station : StationsConsumedProducts)
+		{
+			if (Station.ObjectName == InProductName)
+			{
+				Result.Add(Station);
+			}
+		}
+		return Result;
 	}
 };
 

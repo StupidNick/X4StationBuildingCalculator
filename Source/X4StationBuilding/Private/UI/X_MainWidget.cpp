@@ -1,10 +1,11 @@
 #include "UI/X_MainWidget.h"
 
+#include "X_DropDownButtonWD.h"
 #include "X_DropDownMenu.h"
 #include "Components/Button.h"
 #include "Components/EditableText.h"
 #include "Components/TextBlock.h"
-
+#include "Components/VerticalBox.h"
 
 
 void UX_MainWidget::NativeOnInitialized()
@@ -68,11 +69,25 @@ void UX_MainWidget::ClearSelectedStationsList()
 	SelectedStationsList->SetText(FText::FromString(""));
 }
 
-void UX_MainWidget::SetResult(FResult InResult)
+void UX_MainWidget::SetResult(FResult& InResult)
 {
-	NecessaryProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.NecessaryProducts)));
-	OutStations->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultStations)));
-	ResultProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultProducts)));
+	// NecessaryProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.NecessaryProducts)));
+	// OutStations->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultStations)));
+	// ResultProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultProducts)));
+
+	if (!OutputProductsVB || !DropDownButtonClass) return;
+
+	DropDownButtons.Empty();
+	for (auto Product : InResult.ResultProducts)
+	{
+		UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
+		if (!Button) return;
+
+		Button->InitializeWidget(Product.Name, InResult);
+		OutputProductsVB->AddChild(Button);
+		
+		DropDownButtons.Add(Button);
+	}
 	// TODO make result info with drop down buttons
 }
 

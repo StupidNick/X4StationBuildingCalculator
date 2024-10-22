@@ -14,11 +14,11 @@ class X4STATIONBUILDING_API UXDA_Stations : public UDataAsset
 
 public:
 	UFUNCTION()
-	FStationInfo FindStationByName(FName InName);
+	FStationData FindStationByName(FName InName);
 	UFUNCTION()
-	FStationInfo FindStationByManufacturedProduct(FName InName);
+	FStationData FindStationByManufacturedProduct(FName InName);
 	
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FStationInfo> Stations;
+	TArray<FStationData> Stations;
 };

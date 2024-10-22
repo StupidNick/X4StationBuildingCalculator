@@ -6,6 +6,8 @@
 #include "X_MainWidget.generated.h"
 
 
+class UX_DropDownButton;
+class UVerticalBox;
 struct FObjectInfo;
 class UEditableText;
 class UTextBlock;
@@ -23,7 +25,7 @@ public:
 
 	void SetStationsAndCount(TArray<FObjectInfo> InStations);
 	void ClearSelectedStationsList();
-	void SetResult(FResult InResult);
+	void SetResult(FResult& InResult);
 
 	void PrintError(FText InText) const;
 	void PrintError(FString InText) const;
@@ -43,34 +45,47 @@ public:
 	FNameIntDelegate OnAddStationsButtonClicked;
 	FSimpleDelegate OnCalculateButtonClickedEvent;
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UX_DropDownButton> DropDownButtonClass;
+
+	UPROPERTY()
+	TArray<UX_DropDownButton*> DropDownButtons;
 	
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UX_DropDownMenu* StationsList;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UEditableText* StationsNumber; // Replace to custom editable text block
-
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	
+// TextBlocks begin
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SelectedStationsList;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* NecessaryProducts;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ResultProducts;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* OutStations;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ErrorTextBlock;
+// TextBlocks end
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+// Buttons begin
+	UPROPERTY(meta = (BindWidget))
 	UButton* AddStationsButton;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UButton* CalculateButton;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UButton* ClearSelectedListButton;
+// Buttons end
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* OutputProductsVB;
 };

@@ -5,6 +5,7 @@
 #include "X_ObjectsListWD.generated.h"
 
 
+struct FStationManufacturedInfo;
 struct FResult;
 struct FObjectInfo;
 class UX_NameWithAmountWD;
@@ -18,7 +19,10 @@ class X4STATIONBUILDING_API UX_ObjectsListWD : public UUserWidget
 
 public:
 
-	void CreateList(TMap<FObjectInfo, bool> In);
+	void CreateList(const TArray<FStationManufacturedInfo>& InManufacturedStations, const TArray<FStationManufacturedInfo>& InConsumedStations);
+
+private:
+	void CreateNewLine(const TArray<FStationManufacturedInfo>& InStations);
 
 public:
 
@@ -27,4 +31,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UX_NameWithAmountWD> NameWithAmountClass;
+
+	UPROPERTY()
+	TArray<UX_NameWithAmountWD*> Lines;
 };

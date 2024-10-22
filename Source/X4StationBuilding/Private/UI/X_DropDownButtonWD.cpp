@@ -3,7 +3,7 @@
 #include "X_ObjectsListWD.h"
 #include "Components/Button.h"
 #include "Components/MenuAnchor.h"
-
+#include "Components/TextBlock.h"
 
 
 void UX_DropDownButton::NativeOnInitialized()
@@ -16,39 +16,38 @@ void UX_DropDownButton::NativeOnInitialized()
 	OpenButton->OnClicked.AddDynamic(this, &UX_DropDownButton::OpenMenu);
 }
 
-void UX_DropDownButton::Initialize(FName InName, FResult& InResult)
+void UX_DropDownButton::InitializeWidget(FName InName, FResult& InResult)
 {
-	if (!ButtonTextBlock) return;
+	if (!NameTextBlock || !AmountTextBlock) return;
 
 	FObjectInfo* ResultObjects;
 	FObjectInfo* NecessaryObjects;
 	if (!InResult.FindResultProductsByName(InName, ResultObjects)) return;
-	if (InResult.FindNecessaryProductsByName(InName, NecessaryObjects))
-	{
-		
-	}
+	InResult.FindNecessaryProductsByName(InName, NecessaryObjects);
+
+	const int32 ResultProductNumber = ResultObjects->Numbers - NecessaryObjects->Numbers; 
+	NameTextBlock->SetText(FText::FromName(InName));
+	AmountTextBlock->SetText(FText::AsNumber(ResultProductNumber));
 	
 	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
 	if (!List) return;
-
 	
-	
-	List->CreateList(StationsDA);
-	List->OnStationSelected.BindLambda([&](FText InText)
-	{
-		MenuAnchor->Close();
-		ButtonTextBlock->SetText(InText);
-		CurrentSelectedStation = InText;
-		OnStationSelected.ExecuteIfBound(InText);
-	});
-	
-	ButtonTextBlock->SetText(ButtonText);
+	List->CreateList(InResult.FindAllManufacturedStationsByProductName(InName), InResult.FindAllConsumedStationsByProductName(InName));
 }
 
 void UX_DropDownButton::OpenMenu()
 {
+	if (!MenuAnchor) return;
+
+	if (MenuAnchor->IsOpen())
+	{
+		MenuAnchor->Close();
+		return;
+	}
+	MenuAnchor->Open(true);
 }
 
 UUserWidget* UX_DropDownButton::OnMenuOpen()
 {
+	return List;
 }
