@@ -22,12 +22,16 @@ void UX_DropDownButton::InitializeWidget(FName InName, FResult& InResult)
 	FObjectInfo* ResultObjects;
 	FObjectInfo* NecessaryObjects;
 	if (!InResult.FindResultProductsByName(InName, ResultObjects)) return;
-	InResult.FindNecessaryProductsByName(InName, NecessaryObjects);
 
-	UE_LOG(LogTemp, Warning, TEXT("Result products: %s x%i"), *ResultObjects->Name.ToString(), ResultObjects->Numbers);
-	UE_LOG(LogTemp, Warning, TEXT("Necessary products: %s x%i"), *NecessaryObjects->Name.ToString(), NecessaryObjects->Numbers);
-	UE_LOG(LogTemp, Warning, TEXT("Result: %i"), ResultObjects->Numbers - NecessaryObjects->Numbers);
-	const int32 ResultProductNumber = ResultObjects->Numbers - NecessaryObjects->Numbers; 
+	// UE_LOG(LogTemp, Warning, TEXT("Result products: %s x%i"), *ResultObjects->Name.ToString(), ResultObjects->Numbers);
+	
+	int32 ResultProductNumber = ResultObjects->Numbers;
+	if (InResult.FindNecessaryProductsByName(InName, NecessaryObjects))
+	{
+		ResultProductNumber -= NecessaryObjects->Numbers;
+		// UE_LOG(LogTemp, Warning, TEXT("Necessary products: %s x%i"), *NecessaryObjects->Name.ToString(), NecessaryObjects->Numbers);
+		// UE_LOG(LogTemp, Warning, TEXT("Result: %i"), ResultObjects->Numbers - NecessaryObjects->Numbers);
+	}
 	NameTextBlock->SetText(FText::FromName(InName));
 	AmountTextBlock->SetText(FText::AsNumber(ResultProductNumber));
 	if (ResultProductNumber > 0)

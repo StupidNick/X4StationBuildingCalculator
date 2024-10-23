@@ -46,22 +46,17 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 	}
 
 	FResult Result;
-	for (const auto Station : SelectedStations) // Test more then one station 
+	for (const auto Station : SelectedStations)
 	{
 		FStationData TargetStationInfo;
 		if (!StationsDA->FindStationByName(Station.Name, TargetStationInfo)) return;
 		
 		AddStationToResult(TargetStationInfo, Station.Numbers * TargetStationInfo.ManufacturedProduct.Numbers, Result);
+	}
+	for (const auto Station : SelectedStations) // Test more then one station 
+	{
 		CalculateStationsAndProducts(Station.Name, Station.Numbers, Result);
 	}
-	// for (const auto Station : SelectedStations) // Test more then one station 
-	// {
-	// 	FStationData TargetStationInfo;
-	// 	if (!StationsDA->FindStationByName(Station.Name, TargetStationInfo)) return;
-	// 	
-	// 	AddStationToResult(TargetStationInfo, Station.Numbers * TargetStationInfo.ManufacturedProduct.Numbers, Result);
-	// 	CalculateStationsAndProducts(Station.Name, Station.Numbers, Result);
-	// }
 	
 	CalculateResultProducts(Result);
 	
@@ -115,7 +110,7 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 			CurrentProductions->Numbers += InTargetStationsNumber * ConsumedProduct.Numbers;
 		}
 		
-		FStationData ProductManufacturedStation;
+		FStationData ProductManufacturedStation;// Station that manufactured current consumed product
 		if (!StationsDA->FindStationByManufacturedProduct(ConsumedProduct.Name, ProductManufacturedStation)) continue;
 		UE_LOG(LogTemp, Log, TEXT("Consumed product: %s x%i"), *ConsumedProduct.Name.ToString(), ConsumedProduct.Numbers);
 
@@ -147,12 +142,6 @@ void AX_BuildingCalculator::AddNecessaryProductToResult(const FObjectInfo& InCon
 	Result.NecessaryProducts.Add(CurrentProductions);
 }
 
-void AX_BuildingCalculator::AddProductToResult(const FObjectInfo& InManufacturedProduct, int32 InTargetStationsNumber,
-	FResult& Result)
-{
-	
-}
-
 void AX_BuildingCalculator::AddStationToResult(const FStationData& InManufacturedStation, int32 InProductsNumbers,
 	FResult& Result)
 {
@@ -180,7 +169,7 @@ void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
 {
 	for (const auto Station : Result.ResultStations)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Result station: %s"), *Station.Name.ToString());
+		// UE_LOG(LogTemp, Warning, TEXT("Result station: %s"), *Station.Name.ToString());
 		FStationData CurrentStation;
 		if (!StationsDA->FindStationByName(Station.Name, CurrentStation)) continue;
 
@@ -209,7 +198,7 @@ void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
 												ConsumedProduct.Name,
 												Station.Numbers,
 												ConsumedProduct.Numbers * Station.Numbers));// TODO check this
-			UE_LOG(LogTemp, Warning, TEXT("ConsumedProduct products: %s x%i"), *ConsumedProduct.Name.ToString(), ConsumedProduct.Numbers * Station.Numbers);
+			// UE_LOG(LogTemp, Warning, TEXT("ConsumedProduct products: %s x%i"), *ConsumedProduct.Name.ToString(), ConsumedProduct.Numbers * Station.Numbers);
 		}
 	}
 }

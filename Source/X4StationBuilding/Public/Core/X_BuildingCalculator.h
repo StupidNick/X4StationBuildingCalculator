@@ -27,7 +27,6 @@ protected:
 private:
 	void CalculateStationsAndProducts(FName InTargetStationName, int32 InTargetStationsNumber, FResult& Result);
 	void AddNecessaryProductToResult(const FObjectInfo& InConsumedProduct, int32 InTargetStationsNumber, FResult& Result);
-	void AddProductToResult(const FObjectInfo& InManufacturedProduct, int32 InTargetStationsNumber, FResult& Result);
 	void AddStationToResult(const FStationData& InManufacturedStation, int32 InProductsNumbers, FResult& Result);
 	int32 CalculateNeededNumbersOfStations(int32 NeededProductsNumbers, const FStationData& ManufacturedStation) const;
 	void CalculateResultProducts(FResult& Result);
