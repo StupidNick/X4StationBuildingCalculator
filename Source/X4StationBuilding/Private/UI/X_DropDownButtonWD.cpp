@@ -2,52 +2,70 @@
 #include "X_DropDownMenu.h"
 #include "X_ObjectsListWD.h"
 #include "Components/Button.h"
-#include "Components/MenuAnchor.h"
 #include "Components/TextBlock.h"
+#include "Components/VerticalBox.h"
 
 
 void UX_DropDownButton::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (!OpenButton || !MenuAnchor) return;
+	if (!OpenButton) return;
 	
-	MenuAnchor->OnGetUserMenuContentEvent.BindDynamic(this, &UX_DropDownButton::OnMenuOpen);
 	OpenButton->OnClicked.AddDynamic(this, &UX_DropDownButton::OpenMenu);
 }
 
 void UX_DropDownButton::InitializeWidget(FName InName, FResult& InResult)
 {
-	if (!NameTextBlock || !AmountTextBlock) return;
+	if (!NameTextBlock || !AmountTextBlock || !DetailsVerticalBox) return;
 
 	FObjectInfo* ResultObjects;
 	FObjectInfo* NecessaryObjects;
 	if (!InResult.FindResultProductsByName(InName, ResultObjects)) return;
 	InResult.FindNecessaryProductsByName(InName, NecessaryObjects);
 
+	UE_LOG(LogTemp, Warning, TEXT("Result products: %s x%i"), *ResultObjects->Name.ToString(), ResultObjects->Numbers);
+	UE_LOG(LogTemp, Warning, TEXT("Necessary products: %s x%i"), *NecessaryObjects->Name.ToString(), NecessaryObjects->Numbers);
+	UE_LOG(LogTemp, Warning, TEXT("Result: %i"), ResultObjects->Numbers - NecessaryObjects->Numbers);
 	const int32 ResultProductNumber = ResultObjects->Numbers - NecessaryObjects->Numbers; 
 	NameTextBlock->SetText(FText::FromName(InName));
 	AmountTextBlock->SetText(FText::AsNumber(ResultProductNumber));
+	if (ResultProductNumber > 0)
+	{
+		SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+	}
+	else if (ResultProductNumber < 0)
+	{
+		SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+	}
 	
 	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
 	if (!List) return;
 	
 	List->CreateList(InResult.FindAllManufacturedStationsByProductName(InName), InResult.FindAllConsumedStationsByProductName(InName));
+	
+	List->SetVisibility(ESlateVisibility::Collapsed);
+	DetailsVerticalBox->AddChild(List);
 }
 
 void UX_DropDownButton::OpenMenu()
 {
-	if (!MenuAnchor) return;
+	if (!List) return;
 
-	if (MenuAnchor->IsOpen())
+	if (bIsOpen)
 	{
-		MenuAnchor->Close();
+		List->SetVisibility(ESlateVisibility::Collapsed);
+		bIsOpen = false;
 		return;
 	}
-	MenuAnchor->Open(true);
+	List->SetVisibility(ESlateVisibility::Visible);
+	bIsOpen = true;
 }
 
-UUserWidget* UX_DropDownButton::OnMenuOpen()
+void UX_DropDownButton::SetTextColor(const FLinearColor& InColor) const
 {
-	return List;
+	if (!NameTextBlock || !AmountTextBlock) return;
+
+	NameTextBlock->SetColorAndOpacity(InColor);
+	AmountTextBlock->SetColorAndOpacity(InColor);
 }

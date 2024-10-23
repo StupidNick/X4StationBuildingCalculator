@@ -48,12 +48,20 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 	FResult Result;
 	for (const auto Station : SelectedStations) // Test more then one station 
 	{
-		const FStationData TargetStationInfo = StationsDA->FindStationByName(Station.Name);
-		if (TargetStationInfo.StationName == "None" || TargetStationInfo.ConsumedProducts.IsEmpty()) return;
+		FStationData TargetStationInfo;
+		if (!StationsDA->FindStationByName(Station.Name, TargetStationInfo)) return;
 		
 		AddStationToResult(TargetStationInfo, Station.Numbers * TargetStationInfo.ManufacturedProduct.Numbers, Result);
 		CalculateStationsAndProducts(Station.Name, Station.Numbers, Result);
 	}
+	// for (const auto Station : SelectedStations) // Test more then one station 
+	// {
+	// 	FStationData TargetStationInfo;
+	// 	if (!StationsDA->FindStationByName(Station.Name, TargetStationInfo)) return;
+	// 	
+	// 	AddStationToResult(TargetStationInfo, Station.Numbers * TargetStationInfo.ManufacturedProduct.Numbers, Result);
+	// 	CalculateStationsAndProducts(Station.Name, Station.Numbers, Result);
+	// }
 	
 	CalculateResultProducts(Result);
 	
@@ -88,8 +96,8 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 {
 	if (!StationsDA || InTargetStationsNumber <= 0) return;
 
-	const FStationData TargetStationInfo = StationsDA->FindStationByName(InTargetStationName);
-	if (TargetStationInfo.StationName == "None" || TargetStationInfo.ConsumedProducts.IsEmpty()) return;
+	FStationData TargetStationInfo;
+	if (!StationsDA->FindStationByName(InTargetStationName, TargetStationInfo)) return;
 	UE_LOG(LogTemp, Warning, TEXT("Target station: %s x%i"), *TargetStationInfo.StationName.ToString(), InTargetStationsNumber);
 	
 	for (auto ConsumedProduct : TargetStationInfo.ConsumedProducts)
@@ -99,7 +107,7 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 		FObjectInfo* CurrentProductions;
 		if (!Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions))
 		{
-			AddProductToResult(ConsumedProduct, InTargetStationsNumber, Result);
+			AddNecessaryProductToResult(ConsumedProduct, InTargetStationsNumber, Result);
 			Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions);
 		}
 		else
@@ -107,8 +115,8 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 			CurrentProductions->Numbers += InTargetStationsNumber * ConsumedProduct.Numbers;
 		}
 		
-		const FStationData ProductManufacturedStation = StationsDA->FindStationByManufacturedProduct(ConsumedProduct.Name);
-		if (ProductManufacturedStation.StationName == "None") continue;
+		FStationData ProductManufacturedStation;
+		if (!StationsDA->FindStationByManufacturedProduct(ConsumedProduct.Name, ProductManufacturedStation)) continue;
 		UE_LOG(LogTemp, Log, TEXT("Consumed product: %s x%i"), *ConsumedProduct.Name.ToString(), ConsumedProduct.Numbers);
 
 		FObjectInfo* CurrentStations;
@@ -130,7 +138,7 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 	}
 }
 
-void AX_BuildingCalculator::AddProductToResult(FObjectInfo InConsumedProduct, int32 InTargetStationsNumber,
+void AX_BuildingCalculator::AddNecessaryProductToResult(const FObjectInfo& InConsumedProduct, int32 InTargetStationsNumber,
 	FResult& Result)
 {
 	FObjectInfo CurrentProductions;
@@ -139,7 +147,14 @@ void AX_BuildingCalculator::AddProductToResult(FObjectInfo InConsumedProduct, in
 	Result.NecessaryProducts.Add(CurrentProductions);
 }
 
-void AX_BuildingCalculator::AddStationToResult(FStationData InManufacturedStation, int32 InProductsNumbers, FResult& Result)
+void AX_BuildingCalculator::AddProductToResult(const FObjectInfo& InManufacturedProduct, int32 InTargetStationsNumber,
+	FResult& Result)
+{
+	
+}
+
+void AX_BuildingCalculator::AddStationToResult(const FStationData& InManufacturedStation, int32 InProductsNumbers,
+	FResult& Result)
 {
 	FObjectInfo* ExistStation;
 	if (Result.FindStationByName(InManufacturedStation.StationName, ExistStation))
@@ -155,17 +170,19 @@ void AX_BuildingCalculator::AddStationToResult(FStationData InManufacturedStatio
 }
 
 int32 AX_BuildingCalculator::CalculateNeededNumbersOfStations(int32 NeededProductsNumbers,
-	FStationData ManufacturedStation)
+	const FStationData& ManufacturedStation) const
 {
-	return FMath::CeilToInt32(static_cast<float>(NeededProductsNumbers) / static_cast<float>(ManufacturedStation.ManufacturedProduct.Numbers));
+	return FMath::CeilToInt32(static_cast<float>(NeededProductsNumbers) /
+		static_cast<float>(ManufacturedStation.ManufacturedProduct.Numbers));
 }
 
 void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
 {
 	for (const auto Station : Result.ResultStations)
 	{
-		FStationData CurrentStation = StationsDA->FindStationByName(Station.Name);
-		if (CurrentStation.StationName == "None") return;
+		UE_LOG(LogTemp, Warning, TEXT("Result station: %s"), *Station.Name.ToString());
+		FStationData CurrentStation;
+		if (!StationsDA->FindStationByName(Station.Name, CurrentStation)) continue;
 
 		FObjectInfo* ManufacturedProducts;
 		if (Result.FindResultProductsByName(CurrentStation.ManufacturedProduct.Name, ManufacturedProducts))
@@ -178,6 +195,21 @@ void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
 			Temp.Name = CurrentStation.ManufacturedProduct.Name;
 			Temp.Numbers = Station.Numbers * CurrentStation.ManufacturedProduct.Numbers;
 			Result.ResultProducts.Add(Temp);
+		}
+
+		Result.StationsManufacturedProducts.Add(FStationManufacturedInfo(Station.Name,
+												CurrentStation.ManufacturedProduct.Name,
+												Station.Numbers,
+												CurrentStation.ManufacturedProduct.Numbers * Station.Numbers));
+
+		if (CurrentStation.ConsumedProducts.IsEmpty()) continue;
+		for (const auto& ConsumedProduct : CurrentStation.ConsumedProducts)
+		{
+			Result.StationsConsumedProducts.Add(FStationManufacturedInfo(Station.Name,
+												ConsumedProduct.Name,
+												Station.Numbers,
+												ConsumedProduct.Numbers * Station.Numbers));// TODO check this
+			UE_LOG(LogTemp, Warning, TEXT("ConsumedProduct products: %s x%i"), *ConsumedProduct.Name.ToString(), ConsumedProduct.Numbers * Station.Numbers);
 		}
 	}
 }

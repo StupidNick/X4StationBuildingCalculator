@@ -5,10 +5,10 @@
 #include "Service/X_Types.h"
 #include "X_MainWidget.generated.h"
 
-
-class UX_DropDownButton;
-class UVerticalBox;
 struct FObjectInfo;
+class UVerticalBox;
+class UScrollBox;
+class UX_DropDownButton;
 class UEditableText;
 class UTextBlock;
 class UX_DropDownMenu;
@@ -23,7 +23,7 @@ public:
 
 	virtual void NativeOnInitialized() override;
 
-	void SetStationsAndCount(TArray<FObjectInfo> InStations);
+	void SetStationsAndCount(TArray<FObjectInfo>& InStations);
 	void ClearSelectedStationsList();
 	void SetResult(FResult& InResult);
 
@@ -38,7 +38,9 @@ private:
 	UFUNCTION()
 	void OnClearSelectedListButtonClicked();
 
-	FString GetStringFromNamesAndNumbers(TArray<FObjectInfo> InStations);
+	void ClearResults();
+
+	FString GetStringFromNamesAndNumbers(TArray<FObjectInfo>& InStations);
 
 public:
 
@@ -48,6 +50,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UX_DropDownButton> DropDownButtonClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	FMargin DropDownButtonsPadding;
 
 	UPROPERTY()
 	TArray<UX_DropDownButton*> DropDownButtons;
@@ -86,6 +91,11 @@ public:
 	UButton* ClearSelectedListButton;
 // Buttons end
 
+// Boxes begin
+	UPROPERTY(meta = (BindWidget))
+	UScrollBox* MainSB;
+
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* OutputProductsVB;
+// Boxes end
 };

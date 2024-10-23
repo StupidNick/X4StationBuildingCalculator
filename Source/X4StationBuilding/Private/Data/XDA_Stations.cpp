@@ -2,36 +2,32 @@
 
 
 
-FStationData UXDA_Stations::FindStationByName(FName InName)
+bool UXDA_Stations::FindStationByName(FName InName, FStationData& Result)
 {
-	FStationData Result;
-	Result.StationName = "None";
-	Result.ManufacturedProduct = FObjectInfo();
-	if (Stations.IsEmpty()) return Result;
+	if (Stations.IsEmpty()) return false;
 	
 	for (auto Element : Stations)
 	{
 		if (Element.StationName == InName)
 		{
-			return Element;
+			Result = Element;
+			return true;
 		}
 	}
-	return Result;
+	return false;
 }
 
-FStationData UXDA_Stations::FindStationByManufacturedProduct(FName InName)
+bool UXDA_Stations::FindStationByManufacturedProduct(FName InName, FStationData& Result)
 {
-	FStationData Result;
-	Result.StationName = "None";
-	Result.ManufacturedProduct = FObjectInfo();
-	if (Stations.IsEmpty()) return Result;
+	if (Stations.IsEmpty()) return false;
 
 	for (auto Element : Stations)
 	{
 		if (Element.ManufacturedProduct.Name == InName)
 		{
-			return Element;
+			Result = Element;
+			return true;
 		}
 	}
-	return Result;
+	return false;
 }

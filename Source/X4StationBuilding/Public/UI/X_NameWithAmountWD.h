@@ -15,6 +15,7 @@ class X4STATIONBUILDING_API UX_NameWithAmountWD : public UUserWidget
 public:
 
 	void SetInfo(const FText& InNameObject, int32 InAmountObjects) const;
+	void SetTextColor(const FLinearColor& InColor) const;
 
 public:
 

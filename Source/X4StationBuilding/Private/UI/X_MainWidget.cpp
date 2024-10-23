@@ -1,9 +1,9 @@
 #include "UI/X_MainWidget.h"
-
 #include "X_DropDownButtonWD.h"
 #include "X_DropDownMenu.h"
 #include "Components/Button.h"
 #include "Components/EditableText.h"
+#include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 
@@ -44,7 +44,7 @@ void UX_MainWidget::OnClearSelectedListButtonClicked()
 	OnClearSelectedListButtonClickedEvent.ExecuteIfBound();
 }
 
-FString UX_MainWidget::GetStringFromNamesAndNumbers(TArray<FObjectInfo> InStations)
+FString UX_MainWidget::GetStringFromNamesAndNumbers(TArray<FObjectInfo>& InStations)
 {
 	FString Result;
 	for (auto Station : InStations)
@@ -57,7 +57,7 @@ FString UX_MainWidget::GetStringFromNamesAndNumbers(TArray<FObjectInfo> InStatio
 	return Result;
 }
 
-void UX_MainWidget::SetStationsAndCount(TArray<FObjectInfo> InStations)
+void UX_MainWidget::SetStationsAndCount(TArray<FObjectInfo>& InStations)
 {
 	SelectedStationsList->SetText(FText::FromString(GetStringFromNamesAndNumbers(InStations)));
 }
@@ -75,20 +75,31 @@ void UX_MainWidget::SetResult(FResult& InResult)
 	// OutStations->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultStations)));
 	// ResultProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultProducts)));
 
-	if (!OutputProductsVB || !DropDownButtonClass) return;
+	if (!MainSB || !DropDownButtonClass) return;
 
+	ClearResults();
 	DropDownButtons.Empty();
-	for (auto Product : InResult.ResultProducts)
+	
+	for (const auto Product : InResult.ResultProducts)
 	{
 		UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
 		if (!Button) return;
 
 		Button->InitializeWidget(Product.Name, InResult);
+		Button->SetPadding(DropDownButtonsPadding);
 		OutputProductsVB->AddChild(Button);
 		
 		DropDownButtons.Add(Button);
 	}
-	// TODO make result info with drop down buttons
+}
+
+void UX_MainWidget::ClearResults()
+{
+	for (const auto Button : DropDownButtons)
+	{
+		Button->RemoveFromParent();
+		Button->Destruct();
+	}
 }
 
 void UX_MainWidget::PrintError(FText InText) const

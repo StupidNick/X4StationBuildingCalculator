@@ -22,11 +22,11 @@ public:
 	void CreateList(const TArray<FStationManufacturedInfo>& InManufacturedStations, const TArray<FStationManufacturedInfo>& InConsumedStations);
 
 private:
-	void CreateNewLine(const TArray<FStationManufacturedInfo>& InStations);
+	void CreateNewLine(const TArray<FStationManufacturedInfo>& InStations, bool bIsPositive);
 
 public:
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* VerticalBox;
 
 	UPROPERTY(EditDefaultsOnly)

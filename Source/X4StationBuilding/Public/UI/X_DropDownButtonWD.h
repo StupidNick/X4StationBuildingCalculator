@@ -5,11 +5,11 @@
 #include "X_DropDownButtonWD.generated.h"
 
 
+class UVerticalBox;
 struct FResult;
 class UX_ObjectsListWD;
 class UTextBlock;
 class UButton;
-class UMenuAnchor;
 
 UCLASS()
 class X4STATIONBUILDING_API UX_DropDownButton : public UUserWidget
@@ -25,22 +25,20 @@ private:
 
 	UFUNCTION()
 	void OpenMenu();
-
-	UFUNCTION()
-	UUserWidget* OnMenuOpen();
+	void SetTextColor(const FLinearColor& InColor) const;
 
 public:
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UMenuAnchor* MenuAnchor;
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* DetailsVerticalBox;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UButton* OpenButton;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* NameTextBlock;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* AmountTextBlock;
 
 	UPROPERTY(EditAnywhere)
@@ -50,4 +48,6 @@ private:
 
 	UPROPERTY()
 	UX_ObjectsListWD* List;
+
+	bool bIsOpen = false;
 };

@@ -37,10 +37,10 @@ struct FStationManufacturedInfo
 
 	FStationManufacturedInfo(){}
 
-	FStationManufacturedInfo(const FName StationName, const FName ObjectName, int32 Numbers)
-		: StationName(StationName), StationsNumber(0),
-		  ObjectName(ObjectName),
-		  ObjectsNumber(Numbers)
+	FStationManufacturedInfo(const FName InStationName, const FName InObjectName, int32 InStationNumbers, int32 InObjectNumbers)
+		: StationName(InStationName), StationsNumber(InStationNumbers),
+		  ObjectName(InObjectName),
+		  ObjectsNumber(InObjectNumbers)
 	{
 	}
 

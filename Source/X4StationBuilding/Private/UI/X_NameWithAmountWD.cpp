@@ -10,3 +10,11 @@ void UX_NameWithAmountWD::SetInfo(const FText& InNameObject, int32 InAmountObjec
 	NameTextBlock->SetText(InNameObject);
 	AmountTextBlock->SetText(FText::AsNumber(InAmountObjects));
 }
+
+void UX_NameWithAmountWD::SetTextColor(const FLinearColor& InColor) const
+{
+	if (!NameTextBlock || !AmountTextBlock) return;
+
+	NameTextBlock->SetColorAndOpacity(InColor);
+	AmountTextBlock->SetColorAndOpacity(InColor);
+}
