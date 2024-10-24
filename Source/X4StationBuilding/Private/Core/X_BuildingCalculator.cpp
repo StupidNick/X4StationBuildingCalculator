@@ -1,40 +1,41 @@
-#include "Core/X_BuildingCalculator.h"
+#include "X_BuildingCalculator.h"
 #include "X_HUD.h"
-#include "Service/X_Types.h"
+#include "X_Types.h"
 #include "Kismet/GameplayStatics.h"
 
 
 
-void AX_BuildingCalculator::AddStationsToList(FName InName, int32 InNums) 
+void AX_BuildingCalculator::AddStationsToList(const FText& InName, const int32 InNums) // TODO check
 {
-	int32 SelectedStationCounter = InNums;
-	for (const auto &Station : SelectedStations)
-	{
-		SelectedStationCounter += Station.Numbers;
-	}
-	if (SelectedStationCounter > MaxNumsOfStations)
-	{
-		OnErrorDelegate.ExecuteIfBound(FText::FromString("Sorry you want to build too much modules ):"));
-		return;
-	}
-
-	for (auto &Station : SelectedStations)
-	{
-		if (InName == Station.Name)
-		{
-			Station.Numbers += InNums;
-			if (Station.Numbers <= 0)
-			{
-				SelectedStations.RemoveSingle(Station);
-			}
-			OnSelectedStationAdded.ExecuteIfBound(SelectedStations);
-			return;
-		}
-	}
-	if (InNums <= 0) return;
+	UE_LOG(LogTemp, Warning, TEXT("Add station: %s x%i"), *InName.ToString(), InNums);
+	if (!CheckLimitStations(InNums)) return;
 	
 	SelectedStations.Add(FObjectInfo(InName, InNums));
-	OnSelectedStationAdded.ExecuteIfBound(SelectedStations);
+	CalculateStationsAndProductsForSelectedStations();
+}
+
+void AX_BuildingCalculator::ChangeStationsCountInList(const FText& InName, const int32 InOldNums, const int32 InNewNums) // TODO check
+{
+	UE_LOG(LogTemp, Warning, TEXT("Change '%s' station count: from %i to %i"), *InName.ToString(), InOldNums, InNewNums);
+	FObjectInfo* TargetStationInfo;
+	if (!FindStationInSelected(InName, InOldNums, TargetStationInfo) || !CheckLimitStations(*TargetStationInfo, InNewNums)) return;
+	UE_LOG(LogTemp, Warning, TEXT("Station is found and have inside limit"));
+	
+	TargetStationInfo->Numbers = InNewNums;
+	CalculateStationsAndProductsForSelectedStations();
+}
+
+void AX_BuildingCalculator::RemoveStationsFromList(const FText& InName, const int32 InNums) // TODO check
+{
+	FObjectInfo* TargetStationInfo;
+	if (!FindStationInSelected(InName, InNums, TargetStationInfo)) return;
+
+	SelectedStations.RemoveSingle(*TargetStationInfo);
+	for (auto Element : SelectedStations)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Element: %s x%i"), *Element.Name.ToString(), Element.Numbers);
+	}
+	CalculateStationsAndProductsForSelectedStations();
 }
 
 void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
@@ -79,14 +80,16 @@ void AX_BuildingCalculator::BeginPlay()
 	HUD = Cast<AX_HUD>(PC->GetHUD());
 	if (!HUD) return;
 
-	HUD->OnAddStationsButtonClicked.BindUObject(this, &AX_BuildingCalculator::AddStationsToList);
-	HUD->OnCalculateButtonClickedEvent.BindUObject(this, &AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations);
+	HUD->AddStationEvent.BindUObject(this, &AX_BuildingCalculator::AddStationsToList);
+	HUD->ChangeStationsCountEvent.BindUObject(this, &AX_BuildingCalculator::ChangeStationsCountInList);
+	HUD->RemoveStationEvent.BindUObject(this, &AX_BuildingCalculator::RemoveStationsFromList);
+	
 	HUD->OnClearSelectedListButtonClickedEvent.BindUObject(this, &AX_BuildingCalculator::ClearSelectedStations);
 
 	HUD->SetCalculator(this);
 }
 
-void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationName,
+void AX_BuildingCalculator::CalculateStationsAndProducts(const FText& InTargetStationName,
                                                          int32 InTargetStationsNumber, FResult& Result)
 {
 	if (!StationsDA || InTargetStationsNumber <= 0) return;
@@ -97,7 +100,7 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(FName InTargetStationNa
 	
 	for (auto ConsumedProduct : TargetStationInfo.ConsumedProducts)
 	{
-		if (ConsumedProduct.Name == "None") continue;
+		if (ConsumedProduct.Name.ToString() == "None") continue;
 		
 		FObjectInfo* CurrentProductions;
 		if (!Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions))
@@ -173,7 +176,7 @@ void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
 		FStationData CurrentStation;
 		if (!StationsDA->FindStationByName(Station.Name, CurrentStation)) continue;
 
-		FObjectInfo* ManufacturedProducts;
+		FObjectInfo* ManufacturedProducts = nullptr;
 		if (Result.FindResultProductsByName(CurrentStation.ManufacturedProduct.Name, ManufacturedProducts))
 		{
 			ManufacturedProducts->Numbers += Station.Numbers * CurrentStation.ManufacturedProduct.Numbers;
@@ -201,4 +204,57 @@ void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
 			// UE_LOG(LogTemp, Warning, TEXT("ConsumedProduct products: %s x%i"), *ConsumedProduct.Name.ToString(), ConsumedProduct.Numbers * Station.Numbers);
 		}
 	}
+}
+
+bool AX_BuildingCalculator::CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums)
+{
+	bool bStationIsFound = false;
+	int32 SelectedStationCounter = 0;
+	for (const auto &Station : SelectedStations)
+	{
+		if (!bStationIsFound && Station.Name.ToString() == InSelectedStation.Name.ToString() && Station.Numbers == InSelectedStation.Numbers)
+		{
+			SelectedStationCounter += InNums;
+			bStationIsFound= true;
+			continue;
+		}
+		SelectedStationCounter += Station.Numbers;
+	}
+	if (SelectedStationCounter > MaxNumsOfStations)
+	{
+		OnErrorDelegate.ExecuteIfBound(FText::FromString("Sorry you want to build too much modules ):"));
+		return false;
+	}
+	return true;
+}
+
+bool AX_BuildingCalculator::CheckLimitStations(const int32 InNums)
+{
+	int32 SelectedStationCounter = InNums;
+	for (const auto &Station : SelectedStations)
+	{
+		SelectedStationCounter += Station.Numbers;
+	}
+	if (SelectedStationCounter > MaxNumsOfStations)
+	{
+		OnErrorDelegate.ExecuteIfBound(FText::FromString("Sorry you want to build too much modules ):"));
+		return false;
+	}
+	return true;
+}
+
+bool AX_BuildingCalculator::FindStationInSelected(const FText& InName, const int32 InNums, FObjectInfo*& OutSelectedStation)
+{
+	for (auto& Station : SelectedStations)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Station '%s' with nums %i is equal to station '%s' with nums %i?"), *Station.Name.ToString(), Station.Numbers, *InName.ToString(), InNums);
+		if (Station.Name.ToString() == InName.ToString() && Station.Numbers == InNums)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Yes"));
+			OutSelectedStation = &Station;
+			return true;
+		}
+		UE_LOG(LogTemp, Error, TEXT("No"));
+	}
+	return false;
 }

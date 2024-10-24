@@ -17,6 +17,8 @@ public class X4StationBuilding : ModuleRules
 			"X4StationBuilding", 
 			"X4StationBuilding/Public/Data",
 			"X4StationBuilding/Public/UI",
+			"X4StationBuilding/Public/UI/Service",
+			"X4StationBuilding/Public/Service",
 			"X4StationBuilding/Public/Core"
 		});
 		// Uncomment if you are using Slate UI

@@ -12,26 +12,45 @@ void UX_MainWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (!CalculateButton || !AddStationsButton || !ClearSelectedListButton || !StationsList) return;
+	if (!CalculateButton || !AddStationsButton || !ClearSelectedListButton) return;
 	
 	CalculateButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnCalculateButtonClicked);
 	AddStationsButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnAddButtonClicked);
 	ClearSelectedListButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnClearSelectedListButtonClicked);
+
+	OnAddButtonClicked();
 }
 
 void UX_MainWidget::OnAddButtonClicked()
 {
-	if (StationsList->CurrentSelectedStation.ToString() == "None")
+	if (!SelectStationClass || !SelectedStationsVB) return;
+
+	UX_DropDownMenu* NewLine = CreateWidget<UX_DropDownMenu>(GetWorld(), SelectStationClass);
+	if (!NewLine) return;
+
+	NewLine->OnStationSelected.BindLambda([&](const FText& InStationName, const int32 InStationsCount)
 	{
-		PrintError("Select some station first");
-		return;
-	}
-	if (StationsNumber->GetText().ToString().Len() <= 0)
+		AddNewStationEvent.ExecuteIfBound(InStationName, InStationsCount);
+	});
+	NewLine->OnObjectDestroyed.BindLambda([&](UX_DropDownMenu* InMenu, FText InSelectedStation, int32 InSelectedStationsCount)
 	{
-		PrintError("Enter station count first");
-		return;
-	}
-	OnAddStationsButtonClicked.ExecuteIfBound(*StationsList->CurrentSelectedStation.ToString(), FCString::Atoi(*StationsNumber->GetText().ToString()));
+		SelectedStations.Remove(InMenu);
+		InMenu->RemoveFromParent();
+		InMenu->Destruct();
+	});
+	NewLine->OnStationRemoved.BindLambda([&](const FText& InStationName, const int32 InNums)
+	{
+		RemoveStationEvent.ExecuteIfBound(InStationName, InNums);
+	});
+	NewLine->OnStationCountChanged.BindLambda([&](const FText& InStationName, const int32 InOldCount, const int32 InNewCount)
+	{
+		ChangeStationsCountEvent.ExecuteIfBound(InStationName, InOldCount, InNewCount);
+	});
+
+	NewLine->SetPadding(DropDownButtonsPadding);
+
+	SelectedStationsVB->AddChild(NewLine);
+	SelectedStations.Add(NewLine);
 }
 
 void UX_MainWidget::OnCalculateButtonClicked()
@@ -59,22 +78,18 @@ FString UX_MainWidget::GetStringFromNamesAndNumbers(TArray<FObjectInfo>& InStati
 
 void UX_MainWidget::SetStationsAndCount(TArray<FObjectInfo>& InStations)
 {
-	SelectedStationsList->SetText(FText::FromString(GetStringFromNamesAndNumbers(InStations)));
+	// SelectedStationsList->SetText(FText::FromString(GetStringFromNamesAndNumbers(InStations)));
 }
 
 void UX_MainWidget::ClearSelectedStationsList()
 {
-	if (!SelectedStationsList) return;
-
-	SelectedStationsList->SetText(FText::FromString(""));
+	// if (!SelectedStationsList) return;
+	//
+	// SelectedStationsList->SetText(FText::FromString(""));
 }
 
 void UX_MainWidget::SetResult(FResult& InResult)
 {
-	// NecessaryProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.NecessaryProducts)));
-	// OutStations->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultStations)));
-	// ResultProducts->SetText(FText::FromString(GetStringFromNamesAndNumbers(InResult.ResultProducts)));
-
 	if (!MainSB || !DropDownButtonClass) return;
 
 	ClearResults();
@@ -102,12 +117,12 @@ void UX_MainWidget::ClearResults()
 	}
 }
 
-void UX_MainWidget::PrintError(FText InText) const
+void UX_MainWidget::PrintError(const FText& InText) const
 {
 	ErrorTextBlock->SetText(InText);
 }
 
-void UX_MainWidget::PrintError(FString InText) const
+void UX_MainWidget::PrintError(const FString& InText) const
 {
 	ErrorTextBlock->SetText(FText::FromString(InText));
 }

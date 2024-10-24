@@ -2,13 +2,13 @@
 
 
 
-bool UXDA_Stations::FindStationByName(FName InName, FStationData& Result)
+bool UXDA_Stations::FindStationByName(FText InName, FStationData& Result)
 {
 	if (Stations.IsEmpty()) return false;
 	
 	for (auto Element : Stations)
 	{
-		if (Element.StationName == InName)
+		if (Element.StationName.ToString() == InName.ToString())
 		{
 			Result = Element;
 			return true;
@@ -17,13 +17,13 @@ bool UXDA_Stations::FindStationByName(FName InName, FStationData& Result)
 	return false;
 }
 
-bool UXDA_Stations::FindStationByManufacturedProduct(FName InName, FStationData& Result)
+bool UXDA_Stations::FindStationByManufacturedProduct(FText InName, FStationData& Result)
 {
 	if (Stations.IsEmpty()) return false;
 
 	for (auto Element : Stations)
 	{
-		if (Element.ManufacturedProduct.Name == InName)
+		if (Element.ManufacturedProduct.Name.ToString() == InName.ToString())
 		{
 			Result = Element;
 			return true;

@@ -30,8 +30,11 @@ public:
 	FArrayStationsDelegate OnSelectedStationAdded;
 	FResultDelegate OnResultCalculated;
 
-	FNameIntDelegate OnAddStationsButtonClicked;
-	FSimpleDelegate OnCalculateButtonClickedEvent;
+	FTextInt32Delegate AddStationEvent;
+	FChangeStationsCountDelegate ChangeStationsCountEvent;
+	FTextInt32Delegate RemoveStationEvent;
+	
+	// FSimpleDelegate OnCalculateButtonClickedEvent;
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
 
 	UPROPERTY(EditDefaultsOnly)

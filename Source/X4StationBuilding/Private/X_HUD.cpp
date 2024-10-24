@@ -22,18 +22,18 @@ void AX_HUD::SetCalculator(AX_BuildingCalculator* InCalculator)
 
 		MainWidget->PrintError(InText);
 	});
-	Calculator->OnSelectedStationAdded.BindLambda([&](TArray<FObjectInfo> InStationsArray)
-	{
-		if (!MainWidget) return;
-		
-		MainWidget->SetStationsAndCount(InStationsArray);
-	});
-	Calculator->OnSelectedStationsListCleared.BindLambda([&]()
-	{
-		if (!MainWidget) return;
-
-		MainWidget->ClearSelectedStationsList();
-	});
+	// Calculator->OnSelectedStationAdded.BindLambda([&](TArray<FObjectInfo> InStationsArray)
+	// {
+	// 	if (!MainWidget) return;
+	// 	
+	// 	MainWidget->SetStationsAndCount(InStationsArray);
+	// });
+	// Calculator->OnSelectedStationsListCleared.BindLambda([&]()
+	// {
+	// 	if (!MainWidget) return;
+	//
+	// 	MainWidget->ClearSelectedStationsList();
+	// });
 	Calculator->OnResultCalculated.BindLambda([&](FResult InResult)
 	{
 		if (!MainWidget) return;
@@ -50,14 +50,22 @@ void AX_HUD::CreateMainWidget()
 	if (!MainWidget) return;
 	
 	MainWidget->AddToViewport();
-	MainWidget->OnAddStationsButtonClicked.BindLambda([&](FName InName, int32 InNums)
+	MainWidget->AddNewStationEvent.BindLambda([&](const FText& InName, const int32 InNums)
 	{
-		OnAddStationsButtonClicked.ExecuteIfBound(InName, InNums);
+		AddStationEvent.ExecuteIfBound(InName, InNums);
 	});
-	MainWidget->OnCalculateButtonClickedEvent.BindLambda([&]()
+	MainWidget->ChangeStationsCountEvent.BindLambda([&](const FText& InStationName, const int32 InOldCount, const int32 InNewCount)
 	{
-		OnCalculateButtonClickedEvent.ExecuteIfBound();
+		ChangeStationsCountEvent.ExecuteIfBound(InStationName, InOldCount, InNewCount);
 	});
+	MainWidget->RemoveStationEvent.BindLambda([&](const FText& InStationName, const int32 InNums)
+	{
+		RemoveStationEvent.ExecuteIfBound(InStationName, InNums);
+	});
+	// MainWidget->OnCalculateButtonClickedEvent.BindLambda([&]()
+	// {
+	// 	OnCalculateButtonClickedEvent.ExecuteIfBound();
+	// });
 	MainWidget->OnClearSelectedListButtonClickedEvent.BindLambda([&]()
 	{
 		OnClearSelectedListButtonClickedEvent.ExecuteIfBound();

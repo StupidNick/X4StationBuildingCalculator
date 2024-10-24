@@ -18,7 +18,7 @@ class X4STATIONBUILDING_API UX_DropDownButton : public UUserWidget
 
 public:
 
-	void InitializeWidget(FName InName, FResult& InResult);
+	void InitializeWidget(FText InName, FResult& InResult);
 
 private:
 	virtual void NativeOnInitialized() override;

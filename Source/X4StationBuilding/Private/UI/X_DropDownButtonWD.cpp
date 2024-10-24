@@ -15,7 +15,7 @@ void UX_DropDownButton::NativeOnInitialized()
 	OpenButton->OnClicked.AddDynamic(this, &UX_DropDownButton::OpenMenu);
 }
 
-void UX_DropDownButton::InitializeWidget(FName InName, FResult& InResult)
+void UX_DropDownButton::InitializeWidget(FText InName, FResult& InResult)
 {
 	if (!NameTextBlock || !AmountTextBlock || !DetailsVerticalBox) return;
 
@@ -32,7 +32,7 @@ void UX_DropDownButton::InitializeWidget(FName InName, FResult& InResult)
 		// UE_LOG(LogTemp, Warning, TEXT("Necessary products: %s x%i"), *NecessaryObjects->Name.ToString(), NecessaryObjects->Numbers);
 		// UE_LOG(LogTemp, Warning, TEXT("Result: %i"), ResultObjects->Numbers - NecessaryObjects->Numbers);
 	}
-	NameTextBlock->SetText(FText::FromName(InName));
+	NameTextBlock->SetText(InName);
 	AmountTextBlock->SetText(FText::AsNumber(ResultProductNumber));
 	if (ResultProductNumber > 0)
 	{

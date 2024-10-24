@@ -11,7 +11,7 @@ struct FObjectInfo
 	GENERATED_BODY()
 
 	FObjectInfo(){}
-	FObjectInfo(FName InName, int32 InNumbers)
+	FObjectInfo(FText InName, int32 InNumbers)
 	{
 		Name = InName;
 		Numbers = InNumbers;
@@ -19,11 +19,11 @@ struct FObjectInfo
 
 	bool operator==(const FObjectInfo& left) const
 	{
-		return left.Name == Name && left.Numbers == Numbers && left.Cost == Cost;
+		return left.Name.ToString() == Name.ToString() && left.Numbers == Numbers;
 	}
 
 	UPROPERTY(EditAnywhere)
-	FName Name;
+	FText Name;
 	UPROPERTY(EditAnywhere)
 	int32 Numbers;
 	UPROPERTY(EditAnywhere)
@@ -37,7 +37,7 @@ struct FStationManufacturedInfo
 
 	FStationManufacturedInfo(){}
 
-	FStationManufacturedInfo(const FName InStationName, const FName InObjectName, int32 InStationNumbers, int32 InObjectNumbers)
+	FStationManufacturedInfo(const FText InStationName, const FText InObjectName, int32 InStationNumbers, int32 InObjectNumbers)
 		: StationName(InStationName), StationsNumber(InStationNumbers),
 		  ObjectName(InObjectName),
 		  ObjectsNumber(InObjectNumbers)
@@ -45,11 +45,11 @@ struct FStationManufacturedInfo
 	}
 
 	UPROPERTY(EditAnywhere)
-	FName StationName;
+	FText StationName;
 	UPROPERTY(EditAnywhere)
 	int32 StationsNumber;
 	UPROPERTY(EditAnywhere)
-	FName ObjectName;
+	FText ObjectName;
 	UPROPERTY(EditAnywhere)
 	int32 ObjectsNumber;
 };
@@ -60,7 +60,7 @@ struct FStationData
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category = "Common")
-	FName StationName;
+	FText StationName;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Manufacturing")
 	TArray<FObjectInfo> ConsumedProducts;
@@ -91,13 +91,13 @@ struct FResult
 	TArray<FStationManufacturedInfo> StationsConsumedProducts;
 	TArray<FStationManufacturedInfo> StationsManufacturedProducts;
 
-	bool FindNecessaryProductsByName(FName InName, FObjectInfo*& OutProduction)
+	bool FindNecessaryProductsByName(FText InName, FObjectInfo*& OutProduction)
 	{
 		if (NecessaryProducts.IsEmpty()) return false;
 		
 		for (int i = 0; i < NecessaryProducts.Num(); i++)
 		{
-			if (NecessaryProducts[i].Name == InName)
+			if (NecessaryProducts[i].Name.ToString() == InName.ToString())
 			{
 				OutProduction = &NecessaryProducts[i];
 				return true;
@@ -106,13 +106,13 @@ struct FResult
 		return false;
 	}
 
-	bool FindResultProductsByName(FName InName, FObjectInfo*& OutProduction)
+	bool FindResultProductsByName(FText InName, FObjectInfo*& OutProduction)
 	{
 		if (ResultProducts.IsEmpty()) return false;
 		
 		for (int i = 0; i < ResultProducts.Num(); i++)
 		{
-			if (ResultProducts[i].Name == InName)
+			if (ResultProducts[i].Name.ToString() == InName.ToString())
 			{
 				OutProduction = &ResultProducts[i];
 				return true;
@@ -121,13 +121,13 @@ struct FResult
 		return false;
 	}
 
-	bool FindStationByName(FName InName, FObjectInfo*& OutStation)
+	bool FindStationByName(FText InName, FObjectInfo*& OutStation)
 	{
 		if (ResultStations.IsEmpty()) return false;
 		
 		for (int i = 0; i < ResultStations.Num(); i++)
 		{
-			if (ResultStations[i].Name == InName)
+			if (ResultStations[i].Name.ToString() == InName.ToString())
 			{
 				OutStation = &ResultStations[i];
 				return true;
@@ -136,13 +136,13 @@ struct FResult
 		return false;
 	}
 
-	TArray<FStationManufacturedInfo> FindAllManufacturedStationsByProductName(const FName InProductName)
+	TArray<FStationManufacturedInfo> FindAllManufacturedStationsByProductName(const FText InProductName)
 	{
 		TArray<FStationManufacturedInfo> Result;
 		
 		for (auto Station : StationsManufacturedProducts)
 		{
-			if (Station.ObjectName == InProductName)
+			if (Station.ObjectName.ToString() == InProductName.ToString())
 			{
 				Result.Add(Station);
 			}
@@ -150,13 +150,13 @@ struct FResult
 		return Result;
 	}
 
-	TArray<FStationManufacturedInfo> FindAllConsumedStationsByProductName(const FName InProductName)
+	TArray<FStationManufacturedInfo> FindAllConsumedStationsByProductName(const FText InProductName)
 	{
 		TArray<FStationManufacturedInfo> Result;
 		
 		for (auto Station : StationsConsumedProducts)
 		{
-			if (Station.ObjectName == InProductName)
+			if (Station.ObjectName.ToString() == InProductName.ToString())
 			{
 				Result.Add(Station);
 			}
@@ -166,6 +166,8 @@ struct FResult
 };
 
 DECLARE_DELEGATE_OneParam(FTextDelegate, FText)
-DECLARE_DELEGATE_TwoParams(FNameIntDelegate, FName, int32);
-DECLARE_DELEGATE_OneParam(FArrayStationsDelegate, TArray<FObjectInfo>);
-DECLARE_DELEGATE_OneParam(FResultDelegate, FResult);
+DECLARE_DELEGATE_OneParam(FInt32Delegate, int32)
+DECLARE_DELEGATE_OneParam(FArrayStationsDelegate, TArray<FObjectInfo>)
+DECLARE_DELEGATE_OneParam(FResultDelegate, FResult)
+DECLARE_DELEGATE_TwoParams(FTextInt32Delegate, const FText&, const int32)
+DECLARE_DELEGATE_ThreeParams(FChangeStationsCountDelegate, const FText&, const int32, const int32)

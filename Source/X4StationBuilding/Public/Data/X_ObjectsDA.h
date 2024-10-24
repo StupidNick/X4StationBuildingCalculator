@@ -14,11 +14,11 @@ class X4STATIONBUILDING_API UX_ObjectsDA : public UDataAsset
 
 public:
 
-	bool FindObjectByName(FName InName, FObjectInfo& OutObject)
+	bool FindObjectByName(const FText& InName, FObjectInfo& OutObject)
 	{
 		for (auto& Object : Objects)
 		{
-			if (Object.Name == InName)
+			if (Object.Name.ToString() == InName.ToString())
 			{
 				OutObject = Object;
 				return true;

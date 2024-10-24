@@ -6,6 +6,7 @@
 #include "X_DropDownMenu.generated.h"
 
 
+class UX_CustomEditableText;
 class UTextBlock;
 class UX_StationsList;
 class UButton;
@@ -17,30 +18,48 @@ class X4STATIONBUILDING_API UX_DropDownMenu : public UUserWidget
 {
 	GENERATED_BODY()
 
+	DECLARE_DELEGATE_ThreeParams(FMenuDestroyed, UX_DropDownMenu*, FText, int32)
+
+public:
+
+	UFUNCTION()
+	void OnCountChanged(int32 InCount);
+
 private:
 	virtual void NativeOnInitialized() override;
 
 	UFUNCTION()
 	void OpenMenu();
+	UFUNCTION()
+	void DestroyMenu();
 
 	UFUNCTION()
 	UUserWidget* OnMenuOpen();
 
 public:
 
-	FTextDelegate OnStationSelected;
+	FTextInt32Delegate OnStationSelected;
+	FTextInt32Delegate OnStationRemoved;
+	FChangeStationsCountDelegate OnStationCountChanged;
+	FMenuDestroyed OnObjectDestroyed;
 
 	UPROPERTY(EditAnywhere)
 	UXDA_Stations* StationsDA;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UMenuAnchor* MenuAnchor;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UButton* OpenButton;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
+	UButton* DestroyButton;
+
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ButtonTextBlock;
+
+	UPROPERTY(meta = (BindWidget))
+	UX_CustomEditableText* CountTextBlock;
 
 	UPROPERTY(EditAnywhere)
 	FText ButtonText;
@@ -48,8 +67,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UX_StationsList> ListClass;
 
+private:
+
 	UPROPERTY()
 	UX_StationsList* List;
 
 	FText CurrentSelectedStation = FText::FromString("None");
+	int32 CurrentStationsCount = 0;
 };

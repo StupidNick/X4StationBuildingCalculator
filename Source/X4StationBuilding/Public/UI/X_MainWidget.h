@@ -27,8 +27,8 @@ public:
 	void ClearSelectedStationsList();
 	void SetResult(FResult& InResult);
 
-	void PrintError(FText InText) const;
-	void PrintError(FString InText) const;
+	void PrintError(const FText& InText) const;
+	void PrintError(const FString& InText) const;
 
 private:
 	UFUNCTION()
@@ -44,38 +44,23 @@ private:
 
 public:
 
-	FNameIntDelegate OnAddStationsButtonClicked;
+	FTextInt32Delegate AddNewStationEvent;
+	FChangeStationsCountDelegate ChangeStationsCountEvent;
+	FTextInt32Delegate RemoveStationEvent;
+	
 	FSimpleDelegate OnCalculateButtonClickedEvent;
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "DropDown")
 	TSubclassOf<UX_DropDownButton> DropDownButtonClass;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "DropDown")
 	FMargin DropDownButtonsPadding;
 
-	UPROPERTY()
-	TArray<UX_DropDownButton*> DropDownButtons;
-	
-	UPROPERTY(meta = (BindWidget))
-	UX_DropDownMenu* StationsList;
-
-	UPROPERTY(meta = (BindWidget))
-	UEditableText* StationsNumber; // Replace to custom editable text block
+	UPROPERTY(EditDefaultsOnly, Category = "DropDown")
+	TSubclassOf<UX_DropDownMenu> SelectStationClass;
 	
 // TextBlocks begin
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* SelectedStationsList;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* NecessaryProducts;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ResultProducts;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* OutStations;
-
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ErrorTextBlock;
 // TextBlocks end
@@ -97,5 +82,16 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* OutputProductsVB;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* SelectedStationsVB;
 // Boxes end
+
+private:
+
+	UPROPERTY()
+	TArray<UX_DropDownMenu*> SelectedStations;
+
+	UPROPERTY()
+	TArray<UX_DropDownButton*> DropDownButtons;
 };
