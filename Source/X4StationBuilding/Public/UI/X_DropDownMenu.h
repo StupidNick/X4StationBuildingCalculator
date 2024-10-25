@@ -25,23 +25,27 @@ public:
 	UFUNCTION()
 	void OnCountChanged(int32 InCount);
 
+	void SetupSelectedStationAndCount(const FText& InStationName, const int32 InNums);
+
 private:
 	virtual void NativeOnInitialized() override;
+
+	UFUNCTION()
+	void OnStationSelected(const FText& InText);
 
 	UFUNCTION()
 	void OpenMenu();
 	UFUNCTION()
 	void DestroyMenu();
-
 	UFUNCTION()
 	UUserWidget* OnMenuOpen();
 
 public:
 
-	FTextInt32Delegate OnStationSelected;
-	FTextInt32Delegate OnStationRemoved;
-	FChangeStationsCountDelegate OnStationCountChanged;
-	FMenuDestroyed OnObjectDestroyed;
+	FTextInt32Delegate OnStationSelectedEvent;
+	FTextInt32Delegate OnStationRemovedEvent;
+	FChangeStationsCountDelegate OnStationCountChangedEvent;
+	FMenuDestroyed OnObjectDestroyedEvent;
 
 	UPROPERTY(EditAnywhere)
 	UXDA_Stations* StationsDA;

@@ -34,7 +34,7 @@ public:
 	FChangeStationsCountDelegate ChangeStationsCountEvent;
 	FTextInt32Delegate RemoveStationEvent;
 	
-	// FSimpleDelegate OnCalculateButtonClickedEvent;
+	FSimpleDelegate OnAutofillButtonClickedEvent;
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
 
 	UPROPERTY(EditDefaultsOnly)

@@ -22,18 +22,12 @@ void AX_HUD::SetCalculator(AX_BuildingCalculator* InCalculator)
 
 		MainWidget->PrintError(InText);
 	});
-	// Calculator->OnSelectedStationAdded.BindLambda([&](TArray<FObjectInfo> InStationsArray)
-	// {
-	// 	if (!MainWidget) return;
-	// 	
-	// 	MainWidget->SetStationsAndCount(InStationsArray);
-	// });
-	// Calculator->OnSelectedStationsListCleared.BindLambda([&]()
-	// {
-	// 	if (!MainWidget) return;
-	//
-	// 	MainWidget->ClearSelectedStationsList();
-	// });
+	Calculator->OnSelectedStationsListCleared.BindLambda([&]()
+	{
+		if (!MainWidget) return;
+	
+		MainWidget->ClearSelectedStationsList();
+	});
 	Calculator->OnResultCalculated.BindLambda([&](FResult InResult)
 	{
 		if (!MainWidget) return;
@@ -62,10 +56,10 @@ void AX_HUD::CreateMainWidget()
 	{
 		RemoveStationEvent.ExecuteIfBound(InStationName, InNums);
 	});
-	// MainWidget->OnCalculateButtonClickedEvent.BindLambda([&]()
-	// {
-	// 	OnCalculateButtonClickedEvent.ExecuteIfBound();
-	// });
+	MainWidget->OnAutofillButtonClickedEvent.BindLambda([&]()
+	{
+		OnAutofillButtonClickedEvent.ExecuteIfBound();
+	});
 	MainWidget->OnClearSelectedListButtonClickedEvent.BindLambda([&]()
 	{
 		OnClearSelectedListButtonClickedEvent.ExecuteIfBound();

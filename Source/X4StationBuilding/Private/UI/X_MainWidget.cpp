@@ -12,9 +12,9 @@ void UX_MainWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (!CalculateButton || !AddStationsButton || !ClearSelectedListButton) return;
+	if (!AutofillButton || !AddStationsButton || !ClearSelectedListButton) return;
 	
-	CalculateButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnCalculateButtonClicked);
+	AutofillButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnAutofillButtonClicked);
 	AddStationsButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnAddButtonClicked);
 	ClearSelectedListButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnClearSelectedListButtonClicked);
 
@@ -23,39 +23,22 @@ void UX_MainWidget::NativeOnInitialized()
 
 void UX_MainWidget::OnAddButtonClicked()
 {
-	if (!SelectStationClass || !SelectedStationsVB) return;
-
-	UX_DropDownMenu* NewLine = CreateWidget<UX_DropDownMenu>(GetWorld(), SelectStationClass);
-	if (!NewLine) return;
-
-	NewLine->OnStationSelected.BindLambda([&](const FText& InStationName, const int32 InStationsCount)
-	{
-		AddNewStationEvent.ExecuteIfBound(InStationName, InStationsCount);
-	});
-	NewLine->OnObjectDestroyed.BindLambda([&](UX_DropDownMenu* InMenu, FText InSelectedStation, int32 InSelectedStationsCount)
-	{
-		SelectedStations.Remove(InMenu);
-		InMenu->RemoveFromParent();
-		InMenu->Destruct();
-	});
-	NewLine->OnStationRemoved.BindLambda([&](const FText& InStationName, const int32 InNums)
-	{
-		RemoveStationEvent.ExecuteIfBound(InStationName, InNums);
-	});
-	NewLine->OnStationCountChanged.BindLambda([&](const FText& InStationName, const int32 InOldCount, const int32 InNewCount)
-	{
-		ChangeStationsCountEvent.ExecuteIfBound(InStationName, InOldCount, InNewCount);
-	});
-
-	NewLine->SetPadding(DropDownButtonsPadding);
-
-	SelectedStationsVB->AddChild(NewLine);
-	SelectedStations.Add(NewLine);
+	AddStationLine();
 }
 
-void UX_MainWidget::OnCalculateButtonClicked()
+void UX_MainWidget::OnAutofillButtonClicked()
 {
-	OnCalculateButtonClickedEvent.ExecuteIfBound();
+	// if (LastResult.IsEmpty()) return;
+
+	OnAutofillButtonClickedEvent.ExecuteIfBound();
+
+	// for (auto Station : LastResult.ResultStations)
+	// {
+	// 	const auto StationLine = AddStationLine();
+	// 	if (!StationLine) continue;
+	//
+	// 	StationLine->SetupSelectedStationAndCount(Station.Name, Station.Numbers);
+	// }
 }
 
 void UX_MainWidget::OnClearSelectedListButtonClicked()
@@ -63,29 +46,17 @@ void UX_MainWidget::OnClearSelectedListButtonClicked()
 	OnClearSelectedListButtonClickedEvent.ExecuteIfBound();
 }
 
-FString UX_MainWidget::GetStringFromNamesAndNumbers(TArray<FObjectInfo>& InStations)
-{
-	FString Result;
-	for (auto Station : InStations)
-	{
-		Result += Station.Name.ToString();
-		Result += " x";
-		Result += FString::FromInt(Station.Numbers);
-		Result += '\n';
-	}
-	return Result;
-}
-
-void UX_MainWidget::SetStationsAndCount(TArray<FObjectInfo>& InStations)
-{
-	// SelectedStationsList->SetText(FText::FromString(GetStringFromNamesAndNumbers(InStations)));
-}
-
 void UX_MainWidget::ClearSelectedStationsList()
 {
-	// if (!SelectedStationsList) return;
-	//
-	// SelectedStationsList->SetText(FText::FromString(""));
+	if (SelectedStations.IsEmpty()) return;
+
+	for (const auto Station : SelectedStations)
+	{
+		Station->RemoveFromParent();
+		Station->Destruct();
+	}
+	SelectedStations.Empty();
+	ClearResults();
 }
 
 void UX_MainWidget::SetResult(FResult& InResult)
@@ -95,17 +66,18 @@ void UX_MainWidget::SetResult(FResult& InResult)
 	ClearResults();
 	DropDownButtons.Empty();
 	
-	for (const auto Product : InResult.ResultProducts)
+	for (const auto Product : InResult.AllProducts)
 	{
 		UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
-		if (!Button) return;
+		if (!Button) continue;
 
-		Button->InitializeWidget(Product.Name, InResult);
+		Button->InitializeWidget(Product, InResult);
 		Button->SetPadding(DropDownButtonsPadding);
 		OutputProductsVB->AddChild(Button);
 		
 		DropDownButtons.Add(Button);
 	}
+	LastResult = InResult;
 }
 
 void UX_MainWidget::ClearResults()
@@ -115,6 +87,44 @@ void UX_MainWidget::ClearResults()
 		Button->RemoveFromParent();
 		Button->Destruct();
 	}
+	LastResult.Empty();
+}
+
+UX_DropDownMenu* UX_MainWidget::AddStationLine()
+{
+	if (!SelectStationClass || !SelectedStationsVB) return nullptr;
+
+	UX_DropDownMenu* NewLine = CreateWidget<UX_DropDownMenu>(GetWorld(), SelectStationClass);
+	if (!NewLine) return nullptr;
+
+	NewLine->OnStationSelectedEvent.BindLambda([&](const FText& InStationName, const int32 InStationsCount)
+	{
+		AddNewStationEvent.ExecuteIfBound(InStationName, InStationsCount);
+	});
+	NewLine->OnObjectDestroyedEvent.BindLambda([&](UX_DropDownMenu* InMenu, FText InSelectedStation, int32 InSelectedStationsCount)
+	{
+		SelectedStations.Remove(InMenu);
+		InMenu->RemoveFromParent();
+		InMenu->Destruct();
+		if (SelectedStations.IsEmpty())
+		{
+			ClearResults();
+		}
+	});
+	NewLine->OnStationRemovedEvent.BindLambda([&](const FText& InStationName, const int32 InNums)
+	{
+		RemoveStationEvent.ExecuteIfBound(InStationName, InNums);
+	});
+	NewLine->OnStationCountChangedEvent.BindLambda([&](const FText& InStationName, const int32 InOldCount, const int32 InNewCount)
+	{
+		ChangeStationsCountEvent.ExecuteIfBound(InStationName, InOldCount, InNewCount);
+	});
+
+	NewLine->SetPadding(DropDownButtonsPadding);
+
+	SelectedStationsVB->AddChild(NewLine);
+	SelectedStations.Add(NewLine);
+	return NewLine;
 }
 
 void UX_MainWidget::PrintError(const FText& InText) const

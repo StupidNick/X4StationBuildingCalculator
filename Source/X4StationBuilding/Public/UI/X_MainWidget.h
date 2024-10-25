@@ -23,7 +23,6 @@ public:
 
 	virtual void NativeOnInitialized() override;
 
-	void SetStationsAndCount(TArray<FObjectInfo>& InStations);
 	void ClearSelectedStationsList();
 	void SetResult(FResult& InResult);
 
@@ -34,13 +33,12 @@ private:
 	UFUNCTION()
 	void OnAddButtonClicked();
 	UFUNCTION()
-	void OnCalculateButtonClicked();
+	void OnAutofillButtonClicked();
 	UFUNCTION()
 	void OnClearSelectedListButtonClicked();
 
 	void ClearResults();
-
-	FString GetStringFromNamesAndNumbers(TArray<FObjectInfo>& InStations);
+	UX_DropDownMenu* AddStationLine();
 
 public:
 
@@ -48,8 +46,8 @@ public:
 	FChangeStationsCountDelegate ChangeStationsCountEvent;
 	FTextInt32Delegate RemoveStationEvent;
 	
-	FSimpleDelegate OnCalculateButtonClickedEvent;
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
+	FSimpleDelegate OnAutofillButtonClickedEvent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DropDown")
 	TSubclassOf<UX_DropDownButton> DropDownButtonClass;
@@ -70,7 +68,7 @@ public:
 	UButton* AddStationsButton;
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* CalculateButton;
+	UButton* AutofillButton;
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* ClearSelectedListButton;
@@ -94,4 +92,6 @@ private:
 
 	UPROPERTY()
 	TArray<UX_DropDownButton*> DropDownButtons;
+
+	FResult LastResult;
 };

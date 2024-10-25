@@ -87,11 +87,15 @@ struct FResult
 	TArray<FObjectInfo> NecessaryProducts;
 	
 	TArray<FObjectInfo> ResultStations;
+	TArray<FObjectInfo> NecessaryStations;
 
 	TArray<FStationManufacturedInfo> StationsConsumedProducts;
 	TArray<FStationManufacturedInfo> StationsManufacturedProducts;
 
-	bool FindNecessaryProductsByName(FText InName, FObjectInfo*& OutProduction)
+	TArray<FText> AllProducts;
+	
+
+	bool FindNecessaryProductsByName(const FText& InName, FObjectInfo*& OutProduction)
 	{
 		if (NecessaryProducts.IsEmpty()) return false;
 		
@@ -106,7 +110,7 @@ struct FResult
 		return false;
 	}
 
-	bool FindResultProductsByName(FText InName, FObjectInfo*& OutProduction)
+	bool FindResultProductsByName(const FText& InName, FObjectInfo*& OutProduction)
 	{
 		if (ResultProducts.IsEmpty()) return false;
 		
@@ -121,7 +125,7 @@ struct FResult
 		return false;
 	}
 
-	bool FindStationByName(FText InName, FObjectInfo*& OutStation)
+	bool FindResultStationByName(const FText& InName, FObjectInfo*& OutStation)
 	{
 		if (ResultStations.IsEmpty()) return false;
 		
@@ -136,7 +140,22 @@ struct FResult
 		return false;
 	}
 
-	TArray<FStationManufacturedInfo> FindAllManufacturedStationsByProductName(const FText InProductName)
+	bool FindNecessaryStationByName(const FText& InName, FObjectInfo*& OutStation)
+	{
+		if (NecessaryStations.IsEmpty()) return false;
+		
+		for (int i = 0; i < NecessaryStations.Num(); i++)
+		{
+			if (NecessaryStations[i].Name.ToString() == InName.ToString())
+			{
+				OutStation = &NecessaryStations[i];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	TArray<FStationManufacturedInfo> FindAllManufacturedStationsByProductName(const FText& InProductName)
 	{
 		TArray<FStationManufacturedInfo> Result;
 		
@@ -150,7 +169,7 @@ struct FResult
 		return Result;
 	}
 
-	TArray<FStationManufacturedInfo> FindAllConsumedStationsByProductName(const FText InProductName)
+	TArray<FStationManufacturedInfo> FindAllConsumedStationsByProductName(const FText& InProductName)
 	{
 		TArray<FStationManufacturedInfo> Result;
 		
@@ -163,9 +182,39 @@ struct FResult
 		}
 		return Result;
 	}
+
+	void CheckAllProducts(const FText& InProductName)
+	{
+		for (auto Element : AllProducts)
+		{
+			if (Element.ToString() == InProductName.ToString()) return;
+		}
+
+		AllProducts.Add(InProductName);
+	}
+
+	bool IsEmpty() const
+	{
+		if (ResultProducts.IsEmpty() &&	NecessaryProducts.IsEmpty() &&
+			ResultStations.IsEmpty() && NecessaryStations.IsEmpty() &&
+			StationsConsumedProducts.IsEmpty() && StationsManufacturedProducts.IsEmpty() &&
+			AllProducts.IsEmpty()) return true;
+		return false;
+	}
+
+	void Empty()
+	{
+		ResultProducts.Empty();
+		NecessaryProducts.Empty();
+		ResultStations.Empty();
+		NecessaryStations.Empty();
+		StationsConsumedProducts.Empty();
+		StationsManufacturedProducts.Empty();
+		AllProducts.Empty();
+	}
 };
 
-DECLARE_DELEGATE_OneParam(FTextDelegate, FText)
+DECLARE_DELEGATE_OneParam(FTextDelegate, const FText&)
 DECLARE_DELEGATE_OneParam(FInt32Delegate, int32)
 DECLARE_DELEGATE_OneParam(FArrayStationsDelegate, TArray<FObjectInfo>)
 DECLARE_DELEGATE_OneParam(FResultDelegate, FResult)
