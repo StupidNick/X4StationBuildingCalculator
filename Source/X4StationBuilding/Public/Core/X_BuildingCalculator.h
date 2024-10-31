@@ -19,6 +19,8 @@ public:
 	void AddStationsToList(const FText& InName, const int32 InNums);
 	void ChangeStationsCountInList(const FText& InName, const int32 InOldNums, const int32 InNewNums);
 	void RemoveStationsFromList(const FText& InName, const int32 InNums);
+
+	void FillStationsList(TArray<FObjectInfo> InStationsList, FResult& OutResult);
 	void CalculateStationsAndProductsForSelectedStations();
 	void ClearSelectedStations();
 
@@ -26,11 +28,13 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void CalculateStationsAndProducts(const FText& InTargetStationName, int32 InTargetStationsNumber, FResult& Result);
+	void CalculateStationsOneLevelDown(const FText& InTargetStationName, int32 InTargetStationsNumber, bool bInRecursive, FResult& Result);
+	
 	void AddNecessaryProductToResult(const FObjectInfo& InConsumedProduct, int32 InTargetStationsNumber, FResult& Result);
 	void AddNecessaryStationToResult(const FStationData& InManufacturedStation, int32 InProductsNumbers, FResult& Result);
 	int32 CalculateNeededNumbersOfStations(int32 NeededProductsNumbers, const FStationData& ManufacturedStation) const;
-	void CalculateResultProducts(FResult& Result);
+	void CalculateResultProductsByStations(TArray<FObjectInfo> InStations, FResult& Result);
+	void CalculateResultProductsAndStations(FResult& Result);
 
 	bool CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums);
 	bool CheckLimitStations(const int32 InNums);
@@ -40,7 +44,6 @@ public:
 
 	FTextDelegate OnErrorDelegate;
 	FSimpleDelegate OnSelectedStationsListCleared;
-	FArrayStationsDelegate OnSelectedStationAdded;
 	FResultDelegate OnResultCalculated;
 
 	UPROPERTY(EditAnywhere)

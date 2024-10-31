@@ -27,6 +27,8 @@ public:
 
 	void SetupSelectedStationAndCount(const FText& InStationName, const int32 InNums);
 
+	FObjectInfo GetStationInfo() const;
+
 private:
 	virtual void NativeOnInitialized() override;
 

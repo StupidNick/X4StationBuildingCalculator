@@ -216,7 +216,9 @@ struct FResult
 
 DECLARE_DELEGATE_OneParam(FTextDelegate, const FText&)
 DECLARE_DELEGATE_OneParam(FInt32Delegate, int32)
-DECLARE_DELEGATE_OneParam(FArrayStationsDelegate, TArray<FObjectInfo>)
-DECLARE_DELEGATE_OneParam(FResultDelegate, FResult)
+DECLARE_DELEGATE_OneParam(FResultDelegate, FResult&)
+
 DECLARE_DELEGATE_TwoParams(FTextInt32Delegate, const FText&, const int32)
+DECLARE_DELEGATE_TwoParams(FFillStationsDelegate, TArray<FObjectInfo>, FResult&)
+
 DECLARE_DELEGATE_ThreeParams(FChangeStationsCountDelegate, const FText&, const int32, const int32)

@@ -28,17 +28,31 @@ void UX_MainWidget::OnAddButtonClicked()
 
 void UX_MainWidget::OnAutofillButtonClicked()
 {
-	// if (LastResult.IsEmpty()) return;
+	FResult Result; // TODO fix reclick with upscale stations and products 
+	TArray<FObjectInfo> Stations;
+	for (const auto Station : SelectedStations)
+	{
+		Stations.Add(Station->GetStationInfo());
+		Station->RemoveFromParent();
+		Station->Destruct();
+	}
+	SelectedStations.Empty();
 
-	OnAutofillButtonClickedEvent.ExecuteIfBound();
+	OnFillButtonPressed.ExecuteIfBound(Stations, Result);
+	if (Result.ResultStations.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Result is Empty"));
+	}
 
-	// for (auto Station : LastResult.ResultStations)
-	// {
-	// 	const auto StationLine = AddStationLine();
-	// 	if (!StationLine) continue;
-	//
-	// 	StationLine->SetupSelectedStationAndCount(Station.Name, Station.Numbers);
-	// }
+	for (auto Station : Result.ResultStations)
+	{
+		UX_DropDownMenu* NewLine = AddStationLine();
+		if (!NewLine) continue;
+
+		NewLine->SetupSelectedStationAndCount(Station.Name, Station.Numbers);
+	}
+
+	SetResult(Result);
 }
 
 void UX_MainWidget::OnClearSelectedListButtonClicked()
@@ -77,7 +91,6 @@ void UX_MainWidget::SetResult(FResult& InResult)
 		
 		DropDownButtons.Add(Button);
 	}
-	LastResult = InResult;
 }
 
 void UX_MainWidget::ClearResults()
@@ -87,7 +100,6 @@ void UX_MainWidget::ClearResults()
 		Button->RemoveFromParent();
 		Button->Destruct();
 	}
-	LastResult.Empty();
 }
 
 UX_DropDownMenu* UX_MainWidget::AddStationLine()

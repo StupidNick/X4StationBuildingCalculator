@@ -27,14 +27,13 @@ public:
 
 	FTextDelegate OnErrorDelegate;
 	FSimpleDelegate OnSelectedStationsListCleared;
-	FArrayStationsDelegate OnSelectedStationAdded;
-	FResultDelegate OnResultCalculated;
 
 	FTextInt32Delegate AddStationEvent;
 	FChangeStationsCountDelegate ChangeStationsCountEvent;
 	FTextInt32Delegate RemoveStationEvent;
+
+	FFillStationsDelegate OnFillButtonClickedEvent;
 	
-	FSimpleDelegate OnAutofillButtonClickedEvent;
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
 
 	UPROPERTY(EditDefaultsOnly)

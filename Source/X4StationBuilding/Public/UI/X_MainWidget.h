@@ -45,9 +45,10 @@ public:
 	FTextInt32Delegate AddNewStationEvent;
 	FChangeStationsCountDelegate ChangeStationsCountEvent;
 	FTextInt32Delegate RemoveStationEvent;
+
+	FFillStationsDelegate OnFillButtonPressed;
 	
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
-	FSimpleDelegate OnAutofillButtonClickedEvent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DropDown")
 	TSubclassOf<UX_DropDownButton> DropDownButtonClass;
@@ -92,6 +93,4 @@ private:
 
 	UPROPERTY()
 	TArray<UX_DropDownButton*> DropDownButtons;
-
-	FResult LastResult;
 };

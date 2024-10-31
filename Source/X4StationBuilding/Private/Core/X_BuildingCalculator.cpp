@@ -31,6 +31,29 @@ void AX_BuildingCalculator::RemoveStationsFromList(const FText& InName, const in
 	CalculateStationsAndProductsForSelectedStations();
 }
 
+void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList, FResult& OutResult)
+{
+	SelectedStations.Empty();
+	for (const auto Station : InStationsList)
+	{
+		if (Station.Name.ToString() == "None" || Station.Numbers <= 0) continue;
+
+		SelectedStations.Add(Station);
+	}
+
+	if (SelectedStations.IsEmpty())
+	{
+		OnErrorDelegate.ExecuteIfBound(FText::FromString("You didn't select any station!"));
+		return;
+	}
+	
+	for (const auto Station : SelectedStations)
+	{
+		CalculateStationsOneLevelDown(Station.Name, Station.Numbers, true, OutResult);
+	}
+	CalculateResultProductsAndStations(OutResult);
+}
+
 void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 {
 	if (!StationsDA || SelectedStations.IsEmpty())
@@ -47,10 +70,10 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 	}
 	for (const auto Station : SelectedStations) // Test more then one station 
 	{
-		CalculateStationsAndProducts(Station.Name, Station.Numbers, Result);
+		CalculateStationsOneLevelDown(Station.Name, Station.Numbers, false, Result);
 	}
 	
-	CalculateResultProducts(Result);
+	CalculateResultProductsByStations(SelectedStations, Result);
 	
 	OnResultCalculated.ExecuteIfBound(Result);
 }
@@ -74,14 +97,15 @@ void AX_BuildingCalculator::BeginPlay()
 	HUD->AddStationEvent.BindUObject(this, &AX_BuildingCalculator::AddStationsToList);
 	HUD->ChangeStationsCountEvent.BindUObject(this, &AX_BuildingCalculator::ChangeStationsCountInList);
 	HUD->RemoveStationEvent.BindUObject(this, &AX_BuildingCalculator::RemoveStationsFromList);
-	
+
+	HUD->OnFillButtonClickedEvent.BindUObject(this, &AX_BuildingCalculator::FillStationsList);
 	HUD->OnClearSelectedListButtonClickedEvent.BindUObject(this, &AX_BuildingCalculator::ClearSelectedStations);
 
 	HUD->SetCalculator(this);
 }
 
-void AX_BuildingCalculator::CalculateStationsAndProducts(const FText& InTargetStationName,
-                                                         int32 InTargetStationsNumber, FResult& Result)
+void AX_BuildingCalculator::CalculateStationsOneLevelDown(const FText& InTargetStationName,
+                                                         int32 InTargetStationsNumber, bool bInRecursive, FResult& Result)
 {
 	if (!StationsDA || InTargetStationsNumber <= 0) return;
 
@@ -111,19 +135,27 @@ void AX_BuildingCalculator::CalculateStationsAndProducts(const FText& InTargetSt
 		{
 			AddNecessaryStationToResult(ProductManufacturedStation, CurrentProductions->Numbers, Result);
 			Result.FindNecessaryStationByName(ProductManufacturedStation.StationName, CurrentStations);
+			if (bInRecursive)
+			{
+				CalculateStationsOneLevelDown(ProductManufacturedStation.StationName, CurrentStations->Numbers, true, Result);
+			}
 		}
 		else
 		{
 			const int32 NewStationsNumber = CalculateNeededNumbersOfStations(CurrentProductions->Numbers, ProductManufacturedStation);
 			if (CurrentStations->Numbers >= NewStationsNumber) continue;
-			
+
+			if (bInRecursive)
+			{
+				CalculateStationsOneLevelDown(ProductManufacturedStation.StationName, NewStationsNumber - CurrentStations->Numbers, true, Result);
+			}
 			CurrentStations->Numbers = NewStationsNumber;
 		}
 	}
 }
 
 void AX_BuildingCalculator::AddNecessaryProductToResult(const FObjectInfo& InConsumedProduct, int32 InTargetStationsNumber,
-	FResult& Result)
+                                                        FResult& Result)
 {
 	FObjectInfo CurrentProductions;
 	CurrentProductions.Name = InConsumedProduct.Name;
@@ -156,9 +188,9 @@ int32 AX_BuildingCalculator::CalculateNeededNumbersOfStations(int32 NeededProduc
 		static_cast<float>(ManufacturedStation.ManufacturedProduct.Numbers));
 }
 
-void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
+void AX_BuildingCalculator::CalculateResultProductsByStations(TArray<FObjectInfo> InStations, FResult& Result)
 {
-	for (const auto Station : SelectedStations)
+	for (const auto Station : InStations)
 	{
 		FStationData CurrentStation;
 		if (!StationsDA->FindStationByName(Station.Name, CurrentStation)) continue;
@@ -191,6 +223,27 @@ void AX_BuildingCalculator::CalculateResultProducts(FResult& Result)
 												ConsumedProduct.Numbers * Station.Numbers));
 		}
 	}
+}
+
+void AX_BuildingCalculator::CalculateResultProductsAndStations(FResult& Result)
+{
+	Result.ResultStations.Append(SelectedStations);
+	for (const auto Station : Result.NecessaryStations)
+	{
+		FObjectInfo* ManufacturedStation = nullptr;
+		if (Result.FindResultStationByName(Station.Name, ManufacturedStation))
+		{
+			if (ManufacturedStation->Numbers >= Station.Numbers) continue;
+
+			ManufacturedStation->Numbers = Station.Numbers;
+		}
+		else
+		{
+			Result.ResultStations.Add(FObjectInfo(Station.Name, Station.Numbers));
+		}
+	}
+
+	CalculateResultProductsByStations(Result.ResultStations, Result);
 }
 
 bool AX_BuildingCalculator::CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums)
