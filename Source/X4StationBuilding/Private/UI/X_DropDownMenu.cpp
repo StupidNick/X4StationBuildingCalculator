@@ -56,9 +56,9 @@ void UX_DropDownMenu::OnCountChanged(int32 InCount)
 
 void UX_DropDownMenu::SetupSelectedStationAndCount(const FText& InStationName, const int32 InNums)
 {
-	ButtonTextBlock->SetText(InStationName); // TODO check info before using
+	ButtonTextBlock->SetText(InStationName);
 	CurrentSelectedStation = InStationName;
-	// OnStationSelected(InStationName);
+	
 	CountTextBlock->SetText(FText::AsNumber(InNums));
 }
 

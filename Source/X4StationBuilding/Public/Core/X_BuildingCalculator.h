@@ -39,6 +39,7 @@ private:
 	bool CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums);
 	bool CheckLimitStations(const int32 InNums);
 	bool FindStationInSelected(const FText& InName, const int32 InNums, FObjectInfo*& OutSelectedStation);
+	bool FindStationInSelectedByName(const FText& InName, FObjectInfo*& OutSelectedStation);
 
 public:
 

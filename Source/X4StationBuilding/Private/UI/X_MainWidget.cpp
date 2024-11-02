@@ -38,7 +38,7 @@ void UX_MainWidget::OnAutofillButtonClicked()
 	}
 	SelectedStations.Empty();
 
-	OnFillButtonPressed.ExecuteIfBound(Stations, Result);
+	CalculateStationsEvent.ExecuteIfBound(Stations, Result);
 	if (Result.ResultStations.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Result is Empty"));

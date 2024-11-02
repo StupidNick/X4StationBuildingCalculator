@@ -15,8 +15,15 @@ void AX_BuildingCalculator::AddStationsToList(const FText& InName, const int32 I
 
 void AX_BuildingCalculator::ChangeStationsCountInList(const FText& InName, const int32 InOldNums, const int32 InNewNums) // TODO check
 {
+	// UE_LOG(LogTemp, Error, TEXT("Find for station %s"), *InName.ToString());
+	// for (auto Station : SelectedStations)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Station %s"), *Station.Name.ToString());
+	// }
+	
 	FObjectInfo* TargetStationInfo;
 	if (!FindStationInSelected(InName, InOldNums, TargetStationInfo) || !CheckLimitStations(*TargetStationInfo, InNewNums)) return;
+
 	
 	TargetStationInfo->Numbers = InNewNums;
 	CalculateStationsAndProductsForSelectedStations();
@@ -37,7 +44,12 @@ void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList,
 	for (const auto Station : InStationsList)
 	{
 		if (Station.Name.ToString() == "None" || Station.Numbers <= 0) continue;
-
+		FObjectInfo* CurrentSelectedStation;
+		if (FindStationInSelectedByName(Station.Name, CurrentSelectedStation))
+		{
+			CurrentSelectedStation->Numbers += Station.Numbers;
+			continue;
+		}
 		SelectedStations.Add(Station);
 	}
 
@@ -49,9 +61,24 @@ void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList,
 	
 	for (const auto Station : SelectedStations)
 	{
+		FObjectInfo* CheckedStation;
+		if (OutResult.FindNecessaryStationByName(Station.Name, CheckedStation))
+		{
+			if (Station.Numbers <= CheckedStation->Numbers) continue; // Check if we already calculated products for this station
+			
+			CalculateStationsOneLevelDown(Station.Name, Station.Numbers - CheckedStation->Numbers, true, OutResult);
+			continue;
+		}
+		
 		CalculateStationsOneLevelDown(Station.Name, Station.Numbers, true, OutResult);
 	}
 	CalculateResultProductsAndStations(OutResult);
+
+	SelectedStations.Empty();
+	for (auto Station : OutResult.ResultStations)
+	{
+		SelectedStations.Add(Station);
+	}
 }
 
 void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
@@ -115,16 +142,21 @@ void AX_BuildingCalculator::CalculateStationsOneLevelDown(const FText& InTargetS
 	for (auto ConsumedProduct : TargetStationInfo.ConsumedProducts)
 	{
 		if (ConsumedProduct.Name.ToString() == "None") continue;
-		
+
+		// UE_LOG(LogTemp, Error, TEXT("For station %s x%i"), *TargetStationInfo.StationName.ToString(), InTargetStationsNumber);
 		FObjectInfo* CurrentProductions;
 		if (!Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions))
 		{
 			AddNecessaryProductToResult(ConsumedProduct, InTargetStationsNumber, Result);
 			Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions);
+			// UE_LOG(LogTemp, Warning, TEXT("Create %i necessary '%s' products == %i"),
+				// InTargetStationsNumber * ConsumedProduct.Numbers, *CurrentProductions->Name.ToString(), CurrentProductions->Numbers);
 		}
 		else
 		{
 			CurrentProductions->Numbers += InTargetStationsNumber * ConsumedProduct.Numbers;
+			// UE_LOG(LogTemp, Warning, TEXT("Add %i necessary '%s' products == %i"),
+			// 	InTargetStationsNumber * ConsumedProduct.Numbers, *CurrentProductions->Name.ToString(), CurrentProductions->Numbers);
 		}
 		
 		FStationData ProductManufacturedStation;// Station that manufactured current consumed product
@@ -208,19 +240,38 @@ void AX_BuildingCalculator::CalculateResultProductsByStations(TArray<FObjectInfo
 			Result.ResultProducts.Add(Temp);
 		}
 
-		Result.StationsManufacturedProducts.Add(FStationManufacturedInfo(Station.Name,
+		FStationManufacturedInfo* ManufacturedProductInfo;
+		if (Result.FindManufacturedProductByName(Station.Name, CurrentStation.ManufacturedProduct.Name, ManufacturedProductInfo))
+		{
+			ManufacturedProductInfo->ObjectsNumber += CurrentStation.ManufacturedProduct.Numbers * Station.Numbers;
+			ManufacturedProductInfo->StationsNumber += Station.Numbers;
+		}
+		else
+		{
+			Result.StationsManufacturedProducts.Add(FStationManufacturedInfo(Station.Name,
 												CurrentStation.ManufacturedProduct.Name,
 												Station.Numbers,
 												CurrentStation.ManufacturedProduct.Numbers * Station.Numbers));
+		}
+		
 		Result.CheckAllProducts(CurrentStation.ManufacturedProduct.Name);
 
 		if (CurrentStation.ConsumedProducts.IsEmpty()) continue;
 		for (const auto& ConsumedProduct : CurrentStation.ConsumedProducts)
 		{
-			Result.StationsConsumedProducts.Add(FStationManufacturedInfo(Station.Name,
+			FStationManufacturedInfo* ConsumedProductInfo;
+			if (Result.FindConsumedProductByName(Station.Name, ConsumedProduct.Name, ConsumedProductInfo))
+			{
+				ConsumedProductInfo->ObjectsNumber += ConsumedProduct.Numbers * Station.Numbers;
+				ConsumedProductInfo->StationsNumber += Station.Numbers;
+			}
+			else
+			{
+				Result.StationsConsumedProducts.Add(FStationManufacturedInfo(Station.Name,
 												ConsumedProduct.Name,
 												Station.Numbers,
 												ConsumedProduct.Numbers * Station.Numbers));
+			}
 		}
 	}
 }
@@ -241,6 +292,7 @@ void AX_BuildingCalculator::CalculateResultProductsAndStations(FResult& Result)
 		{
 			Result.ResultStations.Add(FObjectInfo(Station.Name, Station.Numbers));
 		}
+		// UE_LOG(LogTemp, Warning, TEXT("Necessary station %s x%i"), *Station.Name.ToString(), Station.Numbers);
 	}
 
 	CalculateResultProductsByStations(Result.ResultStations, Result);
@@ -285,9 +337,25 @@ bool AX_BuildingCalculator::CheckLimitStations(const int32 InNums)
 
 bool AX_BuildingCalculator::FindStationInSelected(const FText& InName, const int32 InNums, FObjectInfo*& OutSelectedStation)
 {
+	// UE_LOG(LogTemp, Error, TEXT("Loocking for station %s x %i"), *InName.ToString(), InNums);
 	for (auto& Station : SelectedStations)
 	{
+		// UE_LOG(LogTemp, Warning, TEXT("Current station %s x %i"), *Station.Name.ToString(), Station.Numbers);
 		if (Station.Name.ToString() == InName.ToString() && Station.Numbers == InNums)
+		{
+			OutSelectedStation = &Station;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool AX_BuildingCalculator::FindStationInSelectedByName(const FText& InName, FObjectInfo*& OutSelectedStation)
+{
+	for (auto& Station : SelectedStations)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("Current station %s x %i"), *Station.Name.ToString(), Station.Numbers);
+		if (Station.Name.ToString() == InName.ToString())
 		{
 			OutSelectedStation = &Station;
 			return true;

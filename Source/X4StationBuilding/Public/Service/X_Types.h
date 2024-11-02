@@ -95,7 +95,7 @@ struct FResult
 	TArray<FText> AllProducts;
 	
 
-	bool FindNecessaryProductsByName(const FText& InName, FObjectInfo*& OutProduction)
+	bool FindNecessaryProductsByName(const FText& InName, FObjectInfo*& OutProduction) // TODO maybe unification functions for find
 	{
 		if (NecessaryProducts.IsEmpty()) return false;
 		
@@ -181,6 +181,38 @@ struct FResult
 			}
 		}
 		return Result;
+	}
+
+	bool FindConsumedProductByName(const FText& InStationName, const FText& InProductName, FStationManufacturedInfo*& OutStation)
+	{
+		if (StationsConsumedProducts.IsEmpty()) return false;
+		
+		for (int i = 0; i < StationsConsumedProducts.Num(); i++)
+		{
+			if (StationsConsumedProducts[i].StationName.ToString() == InStationName.ToString() &&
+				StationsConsumedProducts[i].ObjectName.ToString() == InProductName.ToString())
+			{
+				OutStation = &StationsConsumedProducts[i];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool FindManufacturedProductByName(const FText& InStationName, const FText& InProductName, FStationManufacturedInfo*& OutStation)
+	{
+		if (StationsManufacturedProducts.IsEmpty()) return false;
+		
+		for (int i = 0; i < StationsManufacturedProducts.Num(); i++)
+		{
+			if (StationsManufacturedProducts[i].StationName.ToString() == InStationName.ToString() &&
+				StationsManufacturedProducts[i].ObjectName.ToString() == InProductName.ToString())
+			{
+				OutStation = &StationsManufacturedProducts[i];
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void CheckAllProducts(const FText& InProductName)

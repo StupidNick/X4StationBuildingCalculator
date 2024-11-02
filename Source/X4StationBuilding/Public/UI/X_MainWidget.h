@@ -46,7 +46,7 @@ public:
 	FChangeStationsCountDelegate ChangeStationsCountEvent;
 	FTextInt32Delegate RemoveStationEvent;
 
-	FFillStationsDelegate OnFillButtonPressed;
+	FFillStationsDelegate CalculateStationsEvent;
 	
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
 
