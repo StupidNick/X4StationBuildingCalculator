@@ -24,23 +24,24 @@ void UX_DropDownMenu::NativeOnInitialized()
 	if (!List) return;
 	
 	List->CreateList(StationsDA);
-	List->OnStationSelected.BindLambda([&](const FText& InText)
-	{
-		MenuAnchor->Close();
-		ButtonTextBlock->SetText(InText);
-		if (CurrentSelectedStation.ToString() != "None")
-		{
-			OnStationRemoved.ExecuteIfBound(CurrentSelectedStation, CurrentStationsCount);
-		}
-		UE_LOG(LogTemp, Warning, TEXT("Select station: %s x%i"), *InText.ToString(), CurrentStationsCount);
-		if (CurrentSelectedStation.ToString() != InText.ToString())
-		{
-			OnStationSelected.ExecuteIfBound(InText, CurrentStationsCount);
-			CurrentSelectedStation = InText;
-		}
-	});
+	List->OnStationSelected.BindUObject(this, &UX_DropDownMenu::OnStationSelected);
 	
 	ButtonTextBlock->SetText(ButtonText);
+}
+
+void UX_DropDownMenu::OnStationSelected(const FText& InText)
+{
+	MenuAnchor->Close();
+	ButtonTextBlock->SetText(InText);
+	if (CurrentSelectedStation.ToString() != "None")
+	{
+		OnStationRemovedEvent.ExecuteIfBound(CurrentSelectedStation, CurrentStationsCount);
+	}
+	if (CurrentSelectedStation.ToString() != InText.ToString())
+	{
+		OnStationSelectedEvent.ExecuteIfBound(InText, CurrentStationsCount);
+		CurrentSelectedStation = InText;
+	}
 }
 
 void UX_DropDownMenu::OnCountChanged(int32 InCount)
@@ -48,9 +49,22 @@ void UX_DropDownMenu::OnCountChanged(int32 InCount)
 	if (CurrentSelectedStation.ToString() != "None" && CurrentStationsCount != InCount)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Send message then station count changed: from %i to %i"), CurrentStationsCount, InCount);
-		OnStationCountChanged.ExecuteIfBound(CurrentSelectedStation, CurrentStationsCount, InCount);
+		OnStationCountChangedEvent.ExecuteIfBound(CurrentSelectedStation, CurrentStationsCount, InCount);
 	}
 	CurrentStationsCount = InCount;
+}
+
+void UX_DropDownMenu::SetupSelectedStationAndCount(const FText& InStationName, const int32 InNums)
+{
+	ButtonTextBlock->SetText(InStationName);
+	CurrentSelectedStation = InStationName;
+	
+	CountTextBlock->SetText(FText::AsNumber(InNums));
+}
+
+FObjectInfo UX_DropDownMenu::GetStationInfo() const
+{
+	return FObjectInfo(CurrentSelectedStation, CurrentStationsCount);
 }
 
 void UX_DropDownMenu::OpenMenu()
@@ -62,8 +76,8 @@ void UX_DropDownMenu::OpenMenu()
 
 void UX_DropDownMenu::DestroyMenu()
 {
-	OnStationRemoved.ExecuteIfBound(CurrentSelectedStation, CurrentStationsCount);
-	OnObjectDestroyed.ExecuteIfBound(this, CurrentSelectedStation, CurrentStationsCount);
+	OnStationRemovedEvent.ExecuteIfBound(CurrentSelectedStation, CurrentStationsCount);
+	OnObjectDestroyedEvent.ExecuteIfBound(this, CurrentSelectedStation, CurrentStationsCount);
 }
 
 UUserWidget* UX_DropDownMenu::OnMenuOpen()

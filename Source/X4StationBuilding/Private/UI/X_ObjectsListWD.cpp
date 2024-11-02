@@ -15,6 +15,8 @@ void UX_ObjectsListWD::CreateList(const TArray<FStationManufacturedInfo>& InManu
 
 void UX_ObjectsListWD::CreateNewLine(const TArray<FStationManufacturedInfo>& InStations, bool bIsPositive)
 {
+	if (InStations.IsEmpty()) return;
+	
 	for (const auto Station : InStations)
 	{
 		UX_NameWithAmountWD* NewLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);

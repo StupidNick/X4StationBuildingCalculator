@@ -21,16 +21,15 @@ void UX_DropDownButton::InitializeWidget(FText InName, FResult& InResult)
 
 	FObjectInfo* ResultObjects;
 	FObjectInfo* NecessaryObjects;
-	if (!InResult.FindResultProductsByName(InName, ResultObjects)) return;
-
-	// UE_LOG(LogTemp, Warning, TEXT("Result products: %s x%i"), *ResultObjects->Name.ToString(), ResultObjects->Numbers);
+	int32 ResultProductNumber = 0;
+	if (InResult.FindResultProductsByName(InName, ResultObjects))
+	{
+		ResultProductNumber = ResultObjects->Numbers;
+	}
 	
-	int32 ResultProductNumber = ResultObjects->Numbers;
 	if (InResult.FindNecessaryProductsByName(InName, NecessaryObjects))
 	{
 		ResultProductNumber -= NecessaryObjects->Numbers;
-		// UE_LOG(LogTemp, Warning, TEXT("Necessary products: %s x%i"), *NecessaryObjects->Name.ToString(), NecessaryObjects->Numbers);
-		// UE_LOG(LogTemp, Warning, TEXT("Result: %i"), ResultObjects->Numbers - NecessaryObjects->Numbers);
 	}
 	NameTextBlock->SetText(InName);
 	AmountTextBlock->SetText(FText::AsNumber(ResultProductNumber));
