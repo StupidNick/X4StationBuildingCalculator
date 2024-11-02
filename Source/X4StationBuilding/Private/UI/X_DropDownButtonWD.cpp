@@ -15,12 +15,11 @@ void UX_DropDownButton::NativeOnInitialized()
 	OpenButton->OnClicked.AddDynamic(this, &UX_DropDownButton::OpenMenu);
 }
 
-void UX_DropDownButton::InitializeWidget(FText InName, FResult& InResult)
+void UX_DropDownButton::InitializeWidgetAsProductsInfo(const FText& InName, FResult& InResult)
 {
 	if (!NameTextBlock || !AmountTextBlock || !DetailsVerticalBox) return;
 
-	FObjectInfo* ResultObjects;
-	FObjectInfo* NecessaryObjects;
+	FObjectInfo *ResultObjects, *NecessaryObjects;
 	int32 ResultProductNumber = 0;
 	if (InResult.FindResultProductsByName(InName, ResultObjects))
 	{
@@ -49,6 +48,44 @@ void UX_DropDownButton::InitializeWidget(FText InName, FResult& InResult)
 	
 	List->SetVisibility(ESlateVisibility::Collapsed);
 	DetailsVerticalBox->AddChild(List);
+}
+
+void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(TArray<FStationWorkforceInfo> InWorkforceInfo)
+{
+	int32 ResultWorkforce = 0;
+	TArray<FStationWorkforceInfo> PositiveWorkforce, NegativeWorkforce;
+	for (const auto Workforce : InWorkforceInfo)
+	{
+		if (Workforce.WorkforceNumber > 0)
+		{
+			PositiveWorkforce.Add(Workforce);
+		}
+		else
+		{
+			NegativeWorkforce.Add(Workforce);
+		}
+		ResultWorkforce += Workforce.WorkforceNumber;
+	}
+
+	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
+	if (!List) return;
+	
+	List->CreateList(PositiveWorkforce, NegativeWorkforce);
+	
+	List->SetVisibility(ESlateVisibility::Collapsed);
+	DetailsVerticalBox->AddChild(List);
+
+	if (ResultWorkforce > 0)
+	{
+		SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+	}
+	else if (ResultWorkforce < 0)
+	{
+		SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+	}
+
+	NameTextBlock->SetText(WorkforceName);
+	AmountTextBlock->SetText(FText::AsNumber(ResultWorkforce));
 }
 
 void UX_DropDownButton::OpenMenu()

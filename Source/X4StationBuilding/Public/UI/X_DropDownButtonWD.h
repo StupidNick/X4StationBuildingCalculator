@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "X_Types.h"
 #include "Blueprint/UserWidget.h"
 #include "X_DropDownButtonWD.generated.h"
 
@@ -18,7 +19,8 @@ class X4STATIONBUILDING_API UX_DropDownButton : public UUserWidget
 
 public:
 
-	void InitializeWidget(FText InName, FResult& InResult);
+	void InitializeWidgetAsProductsInfo(const FText& InName, FResult& InResult);
+	void InitializeWidgetAsWorkforceInfo(TArray<FStationWorkforceInfo> InWorkforceInfo);
 
 private:
 	virtual void NativeOnInitialized() override;
@@ -43,6 +45,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UX_ObjectsListWD> ListClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	FText WorkforceName;
 
 private:
 

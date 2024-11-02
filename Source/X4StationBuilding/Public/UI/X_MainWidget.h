@@ -37,6 +37,9 @@ private:
 	UFUNCTION()
 	void OnClearSelectedListButtonClicked();
 
+	void SetProductsInfo(FResult& InResult);
+	void SetWorkforceInfo(const FResult& InResult);
+
 	void ClearResults();
 	UX_DropDownMenu* AddStationLine();
 
@@ -81,6 +84,9 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* OutputProductsVB;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* OutputWorkforceVB;
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* SelectedStationsVB;

@@ -35,6 +35,7 @@ private:
 	int32 CalculateNeededNumbersOfStations(int32 NeededProductsNumbers, const FStationData& ManufacturedStation) const;
 	void CalculateResultProductsByStations(TArray<FObjectInfo> InStations, FResult& Result);
 	void CalculateResultProductsAndStations(FResult& Result);
+	void CalculateWorkforce(FResult& Result);
 
 	bool CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums);
 	bool CheckLimitStations(const int32 InNums);

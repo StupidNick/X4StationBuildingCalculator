@@ -38,11 +38,10 @@ struct FStationManufacturedInfo
 	FStationManufacturedInfo(){}
 
 	FStationManufacturedInfo(const FText InStationName, const FText InObjectName, int32 InStationNumbers, int32 InObjectNumbers)
-		: StationName(InStationName), StationsNumber(InStationNumbers),
-		  ObjectName(InObjectName),
-		  ObjectsNumber(InObjectNumbers)
-	{
-	}
+		:	StationName(InStationName),
+			StationsNumber(InStationNumbers),
+			ObjectName(InObjectName),
+			ObjectsNumber(InObjectNumbers){}
 
 	UPROPERTY(EditAnywhere)
 	FText StationName;
@@ -52,6 +51,26 @@ struct FStationManufacturedInfo
 	FText ObjectName;
 	UPROPERTY(EditAnywhere)
 	int32 ObjectsNumber;
+};
+
+USTRUCT()
+struct FStationWorkforceInfo
+{
+	GENERATED_BODY()
+
+	FStationWorkforceInfo(){}
+
+	FStationWorkforceInfo(const FText InStationName, int32 InStationNumbers, int32 InWorkforceNumbers)
+		:	StationName(InStationName),
+			StationsNumber(InStationNumbers),
+			WorkforceNumber(InWorkforceNumbers){}
+
+	UPROPERTY(EditAnywhere)
+	FText StationName;
+	UPROPERTY(EditAnywhere)
+	int32 StationsNumber;
+	UPROPERTY(EditAnywhere)
+	int32 WorkforceNumber;
 };
 
 USTRUCT()
@@ -76,6 +95,14 @@ struct FStationData
 
 	UPROPERTY(EditDefaultsOnly, Category = "Building")
 	TArray<FObjectInfo> ObjectsForBuilding;
+
+	bool StationNotProduceAnything() const
+	{
+		if (ManufacturedProduct.Name.ToString() == "None" ||
+			ManufacturedProduct.Name.ToString() == "" ||
+			ManufacturedProduct.Numbers <= 0) return true;
+		return false;
+	}
 };
 
 USTRUCT()
@@ -91,6 +118,8 @@ struct FResult
 
 	TArray<FStationManufacturedInfo> StationsConsumedProducts;
 	TArray<FStationManufacturedInfo> StationsManufacturedProducts;
+
+	TArray<FStationWorkforceInfo> WorkforceSummary;
 
 	TArray<FText> AllProducts;
 	
@@ -215,7 +244,22 @@ struct FResult
 		return false;
 	}
 
-	void CheckAllProducts(const FText& InProductName)
+	bool FindWorkforceByStationName(const FText& InName, FStationWorkforceInfo*& OutStation)
+	{
+		if (WorkforceSummary.IsEmpty()) return false;
+		
+		for (int i = 0; i < WorkforceSummary.Num(); i++)
+		{
+			if (WorkforceSummary[i].StationName.ToString() == InName.ToString())
+			{
+				OutStation = &WorkforceSummary[i];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void AddUniqueToAllProducts(const FText& InProductName)
 	{
 		for (auto Element : AllProducts)
 		{
@@ -229,7 +273,9 @@ struct FResult
 	{
 		if (ResultProducts.IsEmpty() &&	NecessaryProducts.IsEmpty() &&
 			ResultStations.IsEmpty() && NecessaryStations.IsEmpty() &&
-			StationsConsumedProducts.IsEmpty() && StationsManufacturedProducts.IsEmpty() &&
+			StationsConsumedProducts.IsEmpty() &&
+			StationsManufacturedProducts.IsEmpty() &&
+			WorkforceSummary.IsEmpty() &&
 			AllProducts.IsEmpty()) return true;
 		return false;
 	}
@@ -242,6 +288,7 @@ struct FResult
 		NecessaryStations.Empty();
 		StationsConsumedProducts.Empty();
 		StationsManufacturedProducts.Empty();
+		WorkforceSummary.Empty();
 		AllProducts.Empty();
 	}
 };

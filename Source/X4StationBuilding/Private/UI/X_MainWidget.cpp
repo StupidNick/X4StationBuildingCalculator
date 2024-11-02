@@ -28,7 +28,7 @@ void UX_MainWidget::OnAddButtonClicked()
 
 void UX_MainWidget::OnAutofillButtonClicked()
 {
-	FResult Result; // TODO fix reclick with upscale stations and products 
+	FResult Result;
 	TArray<FObjectInfo> Stations;
 	for (const auto Station : SelectedStations)
 	{
@@ -80,17 +80,35 @@ void UX_MainWidget::SetResult(FResult& InResult)
 	ClearResults();
 	DropDownButtons.Empty();
 	
+	SetProductsInfo(InResult);
+	SetWorkforceInfo(InResult);
+}
+
+void UX_MainWidget::SetProductsInfo(FResult& InResult)
+{
 	for (const auto Product : InResult.AllProducts)
 	{
 		UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
 		if (!Button) continue;
 
-		Button->InitializeWidget(Product, InResult);
+		Button->InitializeWidgetAsProductsInfo(Product, InResult);
 		Button->SetPadding(DropDownButtonsPadding);
 		OutputProductsVB->AddChild(Button);
 		
 		DropDownButtons.Add(Button);
 	}
+}
+
+void UX_MainWidget::SetWorkforceInfo(const FResult& InResult)
+{
+	UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
+	if (!Button) return;
+
+	Button->InitializeWidgetAsWorkforceInfo(InResult.WorkforceSummary);
+	Button->SetPadding(DropDownButtonsPadding);
+	OutputWorkforceVB->AddChild(Button);
+	
+	DropDownButtons.Add(Button);
 }
 
 void UX_MainWidget::ClearResults()

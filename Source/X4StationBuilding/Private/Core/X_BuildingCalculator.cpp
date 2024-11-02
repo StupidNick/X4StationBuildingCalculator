@@ -15,15 +15,8 @@ void AX_BuildingCalculator::AddStationsToList(const FText& InName, const int32 I
 
 void AX_BuildingCalculator::ChangeStationsCountInList(const FText& InName, const int32 InOldNums, const int32 InNewNums) // TODO check
 {
-	// UE_LOG(LogTemp, Error, TEXT("Find for station %s"), *InName.ToString());
-	// for (auto Station : SelectedStations)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Station %s"), *Station.Name.ToString());
-	// }
-	
 	FObjectInfo* TargetStationInfo;
 	if (!FindStationInSelected(InName, InOldNums, TargetStationInfo) || !CheckLimitStations(*TargetStationInfo, InNewNums)) return;
-
 	
 	TargetStationInfo->Numbers = InNewNums;
 	CalculateStationsAndProductsForSelectedStations();
@@ -64,7 +57,7 @@ void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList,
 		FObjectInfo* CheckedStation;
 		if (OutResult.FindNecessaryStationByName(Station.Name, CheckedStation))
 		{
-			if (Station.Numbers <= CheckedStation->Numbers) continue; // Check if we already calculated products for this station
+			if (Station.Numbers <= CheckedStation->Numbers) continue;
 			
 			CalculateStationsOneLevelDown(Station.Name, Station.Numbers - CheckedStation->Numbers, true, OutResult);
 			continue;
@@ -79,6 +72,7 @@ void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList,
 	{
 		SelectedStations.Add(Station);
 	}
+	CalculateWorkforce(OutResult);
 }
 
 void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
@@ -95,12 +89,13 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 		FStationData TargetStationInfo;
 		if (!StationsDA->FindStationByName(Station.Name, TargetStationInfo)) return;
 	}
-	for (const auto Station : SelectedStations) // Test more then one station 
+	for (const auto Station : SelectedStations)
 	{
 		CalculateStationsOneLevelDown(Station.Name, Station.Numbers, false, Result);
 	}
 	
 	CalculateResultProductsByStations(SelectedStations, Result);
+	CalculateWorkforce(Result);
 	
 	OnResultCalculated.ExecuteIfBound(Result);
 }
@@ -194,7 +189,7 @@ void AX_BuildingCalculator::AddNecessaryProductToResult(const FObjectInfo& InCon
 	CurrentProductions.Numbers = InConsumedProduct.Numbers * InTargetStationsNumber;
 	Result.NecessaryProducts.Add(CurrentProductions);
 
-	Result.CheckAllProducts(InConsumedProduct.Name);
+	Result.AddUniqueToAllProducts(InConsumedProduct.Name);
 }
 
 void AX_BuildingCalculator::AddNecessaryStationToResult(const FStationData& InManufacturedStation, int32 InProductsNumbers,
@@ -225,7 +220,7 @@ void AX_BuildingCalculator::CalculateResultProductsByStations(TArray<FObjectInfo
 	for (const auto Station : InStations)
 	{
 		FStationData CurrentStation;
-		if (!StationsDA->FindStationByName(Station.Name, CurrentStation)) continue;
+		if (!StationsDA->FindStationByName(Station.Name, CurrentStation) || CurrentStation.StationNotProduceAnything()) continue;
 
 		FObjectInfo* ManufacturedProducts = nullptr;
 		if (Result.FindResultProductsByName(CurrentStation.ManufacturedProduct.Name, ManufacturedProducts))
@@ -254,7 +249,7 @@ void AX_BuildingCalculator::CalculateResultProductsByStations(TArray<FObjectInfo
 												CurrentStation.ManufacturedProduct.Numbers * Station.Numbers));
 		}
 		
-		Result.CheckAllProducts(CurrentStation.ManufacturedProduct.Name);
+		Result.AddUniqueToAllProducts(CurrentStation.ManufacturedProduct.Name);
 
 		if (CurrentStation.ConsumedProducts.IsEmpty()) continue;
 		for (const auto& ConsumedProduct : CurrentStation.ConsumedProducts)
@@ -292,10 +287,30 @@ void AX_BuildingCalculator::CalculateResultProductsAndStations(FResult& Result)
 		{
 			Result.ResultStations.Add(FObjectInfo(Station.Name, Station.Numbers));
 		}
-		// UE_LOG(LogTemp, Warning, TEXT("Necessary station %s x%i"), *Station.Name.ToString(), Station.Numbers);
 	}
 
 	CalculateResultProductsByStations(Result.ResultStations, Result);
+}
+
+void AX_BuildingCalculator::CalculateWorkforce(FResult& Result)
+{
+	for (const auto Station : SelectedStations)
+	{
+		FStationData CurrentStationData;
+		if (!StationsDA->FindStationByName(Station.Name, CurrentStationData)) continue;
+
+		FStationWorkforceInfo* CurrentStationWorkforce = nullptr;
+		if (Result.FindWorkforceByStationName(Station.Name, CurrentStationWorkforce))
+		{
+			CurrentStationWorkforce->WorkforceNumber += CurrentStationData.WorkforceNumber * Station.Numbers;
+			CurrentStationWorkforce->StationsNumber += Station.Numbers;
+		}
+		else
+		{
+			Result.WorkforceSummary.Add(FStationWorkforceInfo(Station.Name, Station.Numbers,
+				CurrentStationData.WorkforceNumber * Station.Numbers));
+		}
+	}
 }
 
 bool AX_BuildingCalculator::CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums)
