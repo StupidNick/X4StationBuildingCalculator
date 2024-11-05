@@ -39,10 +39,7 @@ void UX_MainWidget::OnAutofillButtonClicked()
 	SelectedStations.Empty();
 
 	CalculateStationsEvent.ExecuteIfBound(Stations, Result);
-	if (Result.ResultStations.IsEmpty())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Result is Empty"));
-	}
+	if (Result.ResultStations.IsEmpty()) return;
 
 	for (auto Station : Result.ResultStations)
 	{
@@ -104,7 +101,7 @@ void UX_MainWidget::SetWorkforceInfo(const FResult& InResult)
 	UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
 	if (!Button) return;
 
-	Button->InitializeWidgetAsWorkforceInfo(InResult.WorkforceSummary);
+	Button->InitializeWidgetAsWorkforceInfo(InResult.WorkforceInfo);
 	Button->SetPadding(DropDownButtonsPadding);
 	OutputWorkforceVB->AddChild(Button);
 	
