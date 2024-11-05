@@ -72,7 +72,8 @@ void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList,
 	{
 		SelectedStations.Add(Station);
 	}
-	CalculateWorkforce(OutResult);
+	CalculateCommonWorkforce(OutResult);
+	RecalculateProductsWithWorkforce(OutResult);
 }
 
 void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
@@ -95,7 +96,8 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 	}
 	
 	CalculateResultProductsByStations(SelectedStations, Result);
-	CalculateWorkforce(Result);
+	CalculateCommonWorkforce(Result);
+	RecalculateProductsWithWorkforce(Result);
 	
 	OnResultCalculated.ExecuteIfBound(Result);
 }
@@ -138,20 +140,15 @@ void AX_BuildingCalculator::CalculateStationsOneLevelDown(const FText& InTargetS
 	{
 		if (ConsumedProduct.Name.ToString() == "None") continue;
 
-		// UE_LOG(LogTemp, Error, TEXT("For station %s x%i"), *TargetStationInfo.StationName.ToString(), InTargetStationsNumber);
 		FObjectInfo* CurrentProductions;
 		if (!Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions))
 		{
 			AddNecessaryProductToResult(ConsumedProduct, InTargetStationsNumber, Result);
 			Result.FindNecessaryProductsByName(ConsumedProduct.Name, CurrentProductions);
-			// UE_LOG(LogTemp, Warning, TEXT("Create %i necessary '%s' products == %i"),
-				// InTargetStationsNumber * ConsumedProduct.Numbers, *CurrentProductions->Name.ToString(), CurrentProductions->Numbers);
 		}
 		else
 		{
 			CurrentProductions->Numbers += InTargetStationsNumber * ConsumedProduct.Numbers;
-			// UE_LOG(LogTemp, Warning, TEXT("Add %i necessary '%s' products == %i"),
-			// 	InTargetStationsNumber * ConsumedProduct.Numbers, *CurrentProductions->Name.ToString(), CurrentProductions->Numbers);
 		}
 		
 		FStationData ProductManufacturedStation;// Station that manufactured current consumed product
@@ -212,7 +209,7 @@ int32 AX_BuildingCalculator::CalculateNeededNumbersOfStations(int32 NeededProduc
 	const FStationData& ManufacturedStation) const
 {
 	return FMath::CeilToInt32(static_cast<float>(NeededProductsNumbers) /
-		static_cast<float>(ManufacturedStation.ManufacturedProduct.Numbers));
+		static_cast<float>(ManufacturedStation.DefaultManufacturedProduct.Numbers));
 }
 
 void AX_BuildingCalculator::CalculateResultProductsByStations(TArray<FObjectInfo> InStations, FResult& Result)
@@ -223,33 +220,33 @@ void AX_BuildingCalculator::CalculateResultProductsByStations(TArray<FObjectInfo
 		if (!StationsDA->FindStationByName(Station.Name, CurrentStation) || CurrentStation.StationNotProduceAnything()) continue;
 
 		FObjectInfo* ManufacturedProducts = nullptr;
-		if (Result.FindResultProductsByName(CurrentStation.ManufacturedProduct.Name, ManufacturedProducts))
+		if (Result.FindResultProductsByName(CurrentStation.DefaultManufacturedProduct.Name, ManufacturedProducts))
 		{
-			ManufacturedProducts->Numbers += Station.Numbers * CurrentStation.ManufacturedProduct.Numbers;
+			ManufacturedProducts->Numbers += Station.Numbers * CurrentStation.DefaultManufacturedProduct.Numbers;
 		}
 		else
 		{
 			FObjectInfo Temp;
-			Temp.Name = CurrentStation.ManufacturedProduct.Name;
-			Temp.Numbers = Station.Numbers * CurrentStation.ManufacturedProduct.Numbers;
+			Temp.Name = CurrentStation.DefaultManufacturedProduct.Name;
+			Temp.Numbers = Station.Numbers * CurrentStation.DefaultManufacturedProduct.Numbers;
 			Result.ResultProducts.Add(Temp);
 		}
 
 		FStationManufacturedInfo* ManufacturedProductInfo;
-		if (Result.FindManufacturedProductByName(Station.Name, CurrentStation.ManufacturedProduct.Name, ManufacturedProductInfo))
+		if (Result.FindStationManufacturedProductByName(Station.Name, ManufacturedProductInfo))
 		{
-			ManufacturedProductInfo->ObjectsNumber += CurrentStation.ManufacturedProduct.Numbers * Station.Numbers;
+			ManufacturedProductInfo->ObjectsNumber += CurrentStation.DefaultManufacturedProduct.Numbers * Station.Numbers;
 			ManufacturedProductInfo->StationsNumber += Station.Numbers;
 		}
 		else
 		{
 			Result.StationsManufacturedProducts.Add(FStationManufacturedInfo(Station.Name,
-												CurrentStation.ManufacturedProduct.Name,
+												CurrentStation.DefaultManufacturedProduct.Name,
 												Station.Numbers,
-												CurrentStation.ManufacturedProduct.Numbers * Station.Numbers));
+												CurrentStation.DefaultManufacturedProduct.Numbers * Station.Numbers));
 		}
 		
-		Result.AddUniqueToAllProducts(CurrentStation.ManufacturedProduct.Name);
+		Result.AddUniqueToAllProducts(CurrentStation.DefaultManufacturedProduct.Name);
 
 		if (CurrentStation.ConsumedProducts.IsEmpty()) continue;
 		for (const auto& ConsumedProduct : CurrentStation.ConsumedProducts)
@@ -292,8 +289,11 @@ void AX_BuildingCalculator::CalculateResultProductsAndStations(FResult& Result)
 	CalculateResultProductsByStations(Result.ResultStations, Result);
 }
 
-void AX_BuildingCalculator::CalculateWorkforce(FResult& Result)
+void AX_BuildingCalculator::CalculateCommonWorkforce(FResult& Result)
 {
+	Result.TotalNeededWorkforceNumber = 0;
+	Result.TotalAvailableWorkforceNumber = 0;
+	Result.WorkforceInfo.Empty();
 	for (const auto Station : SelectedStations)
 	{
 		FStationData CurrentStationData;
@@ -302,15 +302,55 @@ void AX_BuildingCalculator::CalculateWorkforce(FResult& Result)
 		FStationWorkforceInfo* CurrentStationWorkforce = nullptr;
 		if (Result.FindWorkforceByStationName(Station.Name, CurrentStationWorkforce))
 		{
-			CurrentStationWorkforce->WorkforceNumber += CurrentStationData.WorkforceNumber * Station.Numbers;
+			CurrentStationWorkforce->WorkforceNumber += CurrentStationData.NeededWorkforceNumber * Station.Numbers;
 			CurrentStationWorkforce->StationsNumber += Station.Numbers;
 		}
 		else
 		{
-			Result.WorkforceSummary.Add(FStationWorkforceInfo(Station.Name, Station.Numbers,
-				CurrentStationData.WorkforceNumber * Station.Numbers));
+			Result.WorkforceInfo.Add(FStationWorkforceInfo(Station.Name, Station.Numbers,
+				CurrentStationData.NeededWorkforceNumber * Station.Numbers));
+		}
+		if (CurrentStationData.NeededWorkforceNumber > 0)
+		{
+			Result.TotalAvailableWorkforceNumber += CurrentStationData.NeededWorkforceNumber * Station.Numbers;
+		}
+		else
+		{
+			Result.TotalNeededWorkforceNumber += FMath::Abs(CurrentStationData.NeededWorkforceNumber * Station.Numbers);
 		}
 	}
+}
+
+void AX_BuildingCalculator::RecalculateProductsWithWorkforce(FResult& Result) const
+{
+	// UE_LOG(LogTemp, Error, TEXT("Inside recalculate"));
+	for (auto& Station : Result.StationsManufacturedProducts)
+	{
+		// UE_LOG(LogTemp, Error, TEXT("Check for station %s"), *Station.StationName.ToString());
+		FStationData CurrentStation;
+		if (!StationsDA->FindStationByName(Station.StationName, CurrentStation) || !CurrentStation.StationEfficiencyCanBeUpgrade()) continue;
+
+		// UE_LOG(LogTemp, Error, TEXT("Station %s is can be recalculated"), *Station.StationName.ToString());
+		const int32 Temp = GetProductNumbersByWorkforce(CurrentStation, Result);
+		Station.ObjectsNumber += Temp;
+
+		FObjectInfo* ResultProduct = nullptr;
+		if (!Result.FindResultProductsByName(Station.ObjectName, ResultProduct)) continue;;
+
+		ResultProduct->Numbers += Temp;
+	}
+}
+
+int32 AX_BuildingCalculator::GetProductNumbersByWorkforce(const FStationData& InStationInfo, const FResult& Result) const
+{
+	// UE_LOG(LogTemp, Error, TEXT("product: %s"), *InStationInfo..ToString());
+	// UE_LOG(LogTemp, Error, TEXT("Result: %i"), Result.TotalNeededWorkforceNumber);
+	if (Result.TotalAvailableWorkforceNumber == 0 || Result.TotalNeededWorkforceNumber == 0) return 0;
+
+	const float X = static_cast<float>(FMath::Min(Result.TotalAvailableWorkforceNumber, Result.TotalNeededWorkforceNumber)) /
+		(static_cast<float>(Result.TotalNeededWorkforceNumber) / 100);
+	const float Y = static_cast<float>((InStationInfo.MaxManufacturedProductsNumber - InStationInfo.DefaultManufacturedProduct.Numbers)) / 100;
+	return FMath::Floor(X * Y);
 }
 
 bool AX_BuildingCalculator::CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums)
@@ -352,10 +392,8 @@ bool AX_BuildingCalculator::CheckLimitStations(const int32 InNums)
 
 bool AX_BuildingCalculator::FindStationInSelected(const FText& InName, const int32 InNums, FObjectInfo*& OutSelectedStation)
 {
-	// UE_LOG(LogTemp, Error, TEXT("Loocking for station %s x %i"), *InName.ToString(), InNums);
 	for (auto& Station : SelectedStations)
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("Current station %s x %i"), *Station.Name.ToString(), Station.Numbers);
 		if (Station.Name.ToString() == InName.ToString() && Station.Numbers == InNums)
 		{
 			OutSelectedStation = &Station;
@@ -369,7 +407,6 @@ bool AX_BuildingCalculator::FindStationInSelectedByName(const FText& InName, FOb
 {
 	for (auto& Station : SelectedStations)
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("Current station %s x %i"), *Station.Name.ToString(), Station.Numbers);
 		if (Station.Name.ToString() == InName.ToString())
 		{
 			OutSelectedStation = &Station;

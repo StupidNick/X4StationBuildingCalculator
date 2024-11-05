@@ -85,23 +85,29 @@ struct FStationData
 	TArray<FObjectInfo> ConsumedProducts;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Manufacturing")
-	FObjectInfo ManufacturedProduct;
+	FObjectInfo DefaultManufacturedProduct;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Manufacturing")
-	int32 WorkforceNumber;
+	int32 MaxManufacturedProductsNumber;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Manufacturing")
-	float MaxEfficiency;
+	int32 NeededWorkforceNumber;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Building")
 	TArray<FObjectInfo> ObjectsForBuilding;
 
 	bool StationNotProduceAnything() const
 	{
-		if (ManufacturedProduct.Name.ToString() == "None" ||
-			ManufacturedProduct.Name.ToString() == "" ||
-			ManufacturedProduct.Numbers <= 0) return true;
+		if (DefaultManufacturedProduct.Name.ToString() == "None" ||
+			DefaultManufacturedProduct.Name.ToString() == "" ||
+			DefaultManufacturedProduct.Numbers <= 0) return true;
 		return false;
+	}
+
+	bool StationEfficiencyCanBeUpgrade() const
+	{
+		if (NeededWorkforceNumber >= 0 || MaxManufacturedProductsNumber <= DefaultManufacturedProduct.Numbers) return false;
+		return true;
 	}
 };
 
@@ -119,7 +125,10 @@ struct FResult
 	TArray<FStationManufacturedInfo> StationsConsumedProducts;
 	TArray<FStationManufacturedInfo> StationsManufacturedProducts;
 
-	TArray<FStationWorkforceInfo> WorkforceSummary;
+	TArray<FStationWorkforceInfo> WorkforceInfo;
+	
+	int32 TotalNeededWorkforceNumber;
+	int32 TotalAvailableWorkforceNumber;
 
 	TArray<FText> AllProducts;
 	
@@ -228,14 +237,13 @@ struct FResult
 		return false;
 	}
 
-	bool FindManufacturedProductByName(const FText& InStationName, const FText& InProductName, FStationManufacturedInfo*& OutStation)
+	bool FindStationManufacturedProductByName(const FText& InStationName, FStationManufacturedInfo*& OutStation)
 	{
 		if (StationsManufacturedProducts.IsEmpty()) return false;
 		
 		for (int i = 0; i < StationsManufacturedProducts.Num(); i++)
 		{
-			if (StationsManufacturedProducts[i].StationName.ToString() == InStationName.ToString() &&
-				StationsManufacturedProducts[i].ObjectName.ToString() == InProductName.ToString())
+			if (StationsManufacturedProducts[i].StationName.ToString() == InStationName.ToString())
 			{
 				OutStation = &StationsManufacturedProducts[i];
 				return true;
@@ -246,13 +254,13 @@ struct FResult
 
 	bool FindWorkforceByStationName(const FText& InName, FStationWorkforceInfo*& OutStation)
 	{
-		if (WorkforceSummary.IsEmpty()) return false;
+		if (WorkforceInfo.IsEmpty()) return false;
 		
-		for (int i = 0; i < WorkforceSummary.Num(); i++)
+		for (int i = 0; i < WorkforceInfo.Num(); i++)
 		{
-			if (WorkforceSummary[i].StationName.ToString() == InName.ToString())
+			if (WorkforceInfo[i].StationName.ToString() == InName.ToString())
 			{
-				OutStation = &WorkforceSummary[i];
+				OutStation = &WorkforceInfo[i];
 				return true;
 			}
 		}
@@ -275,7 +283,7 @@ struct FResult
 			ResultStations.IsEmpty() && NecessaryStations.IsEmpty() &&
 			StationsConsumedProducts.IsEmpty() &&
 			StationsManufacturedProducts.IsEmpty() &&
-			WorkforceSummary.IsEmpty() &&
+			WorkforceInfo.IsEmpty() &&
 			AllProducts.IsEmpty()) return true;
 		return false;
 	}
@@ -288,7 +296,7 @@ struct FResult
 		NecessaryStations.Empty();
 		StationsConsumedProducts.Empty();
 		StationsManufacturedProducts.Empty();
-		WorkforceSummary.Empty();
+		WorkforceInfo.Empty();
 		AllProducts.Empty();
 	}
 };

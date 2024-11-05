@@ -23,7 +23,7 @@ bool UXDA_Stations::FindStationByManufacturedProduct(FText InName, FStationData&
 
 	for (auto Element : Stations)
 	{
-		if (Element.ManufacturedProduct.Name.ToString() == InName.ToString())
+		if (Element.DefaultManufacturedProduct.Name.ToString() == InName.ToString())
 		{
 			Result = Element;
 			return true;
