@@ -19,10 +19,12 @@ public:
 
 	void CreateList(const TArray<FStationManufacturedInfo> InManufacturedStations, const TArray<FStationManufacturedInfo> InConsumedStations);
 	void CreateList(const TArray<FStationWorkforceInfo> InManufacturedStations, const TArray<FStationWorkforceInfo> InConsumedStations);
+	void CreateListForCosts(const TArray<FStationManufacturedInfo> InManufacturedStations);
 
 private:
 	void CreateNewLine(const TArray<FStationManufacturedInfo> InStations, bool bIsPositive);
 	void CreateNewLine(const TArray<FStationWorkforceInfo> InStations, bool bIsPositive);
+	void CreateNewLineForCosts(const TArray<FStationManufacturedInfo> InProducts, bool bIsPositive);
 
 public:
 

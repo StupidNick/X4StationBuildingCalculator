@@ -20,7 +20,8 @@ class X4STATIONBUILDING_API UX_DropDownButton : public UUserWidget
 public:
 
 	void InitializeWidgetAsProductsInfo(const FText& InName, FResult& InResult);
-	void InitializeWidgetAsWorkforceInfo(TArray<FStationWorkforceInfo> InWorkforceInfo);
+	void InitializeWidgetAsWorkforceInfo(const FResult& InResult);
+	void InitializeWidgetAsResultCostsInfo(const TArray<FStationManufacturedInfo> InCostInfo, const int32 InTotalCost);
 
 private:
 	virtual void NativeOnInitialized() override;
@@ -48,6 +49,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	FText WorkforceName;
+
+	UPROPERTY(EditDefaultsOnly)
+	FText ExpensesName;
+
+	UPROPERTY(EditDefaultsOnly)
+	FText ProductionName;
 
 private:
 

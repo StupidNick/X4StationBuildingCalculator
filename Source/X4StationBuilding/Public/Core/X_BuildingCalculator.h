@@ -28,6 +28,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	//Main calculation functions
 	void CalculateStationsOneLevelDown(const FText& InTargetStationName, int32 InTargetStationsNumber, bool bInRecursive, FResult& Result);
 	
 	void AddNecessaryProductToResult(const FObjectInfo& InConsumedProduct, int32 InTargetStationsNumber, FResult& Result);
@@ -35,11 +36,17 @@ private:
 	int32 CalculateNeededNumbersOfStations(int32 NeededProductsNumbers, const FStationData& ManufacturedStation) const;
 	void CalculateResultProductsByStations(TArray<FObjectInfo> InStations, FResult& Result);
 	void CalculateResultProductsAndStations(FResult& Result);
-	
+
+	//Workforce calculation functions
 	void CalculateCommonWorkforce(FResult& Result);
 	void RecalculateProductsWithWorkforce(FResult& Result) const;
 	int32 GetProductNumbersByWorkforce(const FStationData& InStationInfo, const FResult& Result) const;
 
+	//Production credits calculation functions
+	void CalculateTotalMoneyPerHour(FResult& Result) const;
+	int32 CalculateMoneyForStation(FStationManufacturedInfo& Result, const bool InIsManufacturedProduct) const;
+
+	//Service functions
 	bool CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums);
 	bool CheckLimitStations(const int32 InNums);
 	bool FindStationInSelected(const FText& InName, const int32 InNums, FObjectInfo*& OutSelectedStation);

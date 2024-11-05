@@ -79,10 +79,13 @@ void UX_MainWidget::SetResult(FResult& InResult)
 	
 	SetProductsInfo(InResult);
 	SetWorkforceInfo(InResult);
+	SetProductionCostInfo(InResult);
 }
 
 void UX_MainWidget::SetProductsInfo(FResult& InResult)
 {
+	if (!OutputProductsVB) return;
+	
 	for (const auto Product : InResult.AllProducts)
 	{
 		UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
@@ -98,10 +101,32 @@ void UX_MainWidget::SetProductsInfo(FResult& InResult)
 
 void UX_MainWidget::SetWorkforceInfo(const FResult& InResult)
 {
+	if (!OutputWorkforceVB) return;
+	
 	UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
 	if (!Button) return;
 
-	Button->InitializeWidgetAsWorkforceInfo(InResult.WorkforceInfo);
+	Button->InitializeWidgetAsWorkforceInfo(InResult);
+	Button->SetPadding(DropDownButtonsPadding);
+	OutputWorkforceVB->AddChild(Button);
+	
+	DropDownButtons.Add(Button);
+}
+
+void UX_MainWidget::SetProductionCostInfo(const FResult& InResult)
+{
+	if (!OutputProductsVB) return;
+
+	CreateResourcesPerHourButton(InResult.StationsConsumedProducts, InResult.TotalExpensesPerHour);
+	CreateResourcesPerHourButton(InResult.StationsManufacturedProducts, InResult.TotalProductionPerHour);
+}
+
+void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FStationManufacturedInfo> InInfo, const int32 InTotalCost)
+{
+	UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
+	if (!Button) return;
+
+	Button->InitializeWidgetAsResultCostsInfo(InInfo, InTotalCost);
 	Button->SetPadding(DropDownButtonsPadding);
 	OutputWorkforceVB->AddChild(Button);
 	

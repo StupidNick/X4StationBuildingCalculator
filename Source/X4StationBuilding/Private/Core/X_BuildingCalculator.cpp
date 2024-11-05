@@ -1,11 +1,12 @@
 #include "X_BuildingCalculator.h"
 #include "X_HUD.h"
+#include "X_ObjectsDA.h"
 #include "X_Types.h"
 #include "Kismet/GameplayStatics.h"
 
 
 
-void AX_BuildingCalculator::AddStationsToList(const FText& InName, const int32 InNums) // TODO check
+void AX_BuildingCalculator::AddStationsToList(const FText& InName, const int32 InNums)
 {
 	if (!CheckLimitStations(InNums)) return;
 	
@@ -13,7 +14,7 @@ void AX_BuildingCalculator::AddStationsToList(const FText& InName, const int32 I
 	CalculateStationsAndProductsForSelectedStations();
 }
 
-void AX_BuildingCalculator::ChangeStationsCountInList(const FText& InName, const int32 InOldNums, const int32 InNewNums) // TODO check
+void AX_BuildingCalculator::ChangeStationsCountInList(const FText& InName, const int32 InOldNums, const int32 InNewNums)
 {
 	FObjectInfo* TargetStationInfo;
 	if (!FindStationInSelected(InName, InOldNums, TargetStationInfo) || !CheckLimitStations(*TargetStationInfo, InNewNums)) return;
@@ -22,7 +23,7 @@ void AX_BuildingCalculator::ChangeStationsCountInList(const FText& InName, const
 	CalculateStationsAndProductsForSelectedStations();
 }
 
-void AX_BuildingCalculator::RemoveStationsFromList(const FText& InName, const int32 InNums) // TODO check
+void AX_BuildingCalculator::RemoveStationsFromList(const FText& InName, const int32 InNums)
 {
 	FObjectInfo* TargetStationInfo;
 	if (!FindStationInSelected(InName, InNums, TargetStationInfo)) return;
@@ -33,6 +34,8 @@ void AX_BuildingCalculator::RemoveStationsFromList(const FText& InName, const in
 
 void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList, FResult& OutResult)
 {
+	if (!!StationsDA) return;
+	
 	SelectedStations.Empty();
 	for (const auto Station : InStationsList)
 	{
@@ -74,6 +77,7 @@ void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList,
 	}
 	CalculateCommonWorkforce(OutResult);
 	RecalculateProductsWithWorkforce(OutResult);
+	CalculateTotalMoneyPerHour(OutResult);
 }
 
 void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
@@ -98,6 +102,7 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 	CalculateResultProductsByStations(SelectedStations, Result);
 	CalculateCommonWorkforce(Result);
 	RecalculateProductsWithWorkforce(Result);
+	CalculateTotalMoneyPerHour(Result);
 	
 	OnResultCalculated.ExecuteIfBound(Result);
 }
@@ -131,7 +136,7 @@ void AX_BuildingCalculator::BeginPlay()
 void AX_BuildingCalculator::CalculateStationsOneLevelDown(const FText& InTargetStationName,
                                                          int32 InTargetStationsNumber, bool bInRecursive, FResult& Result)
 {
-	if (!StationsDA || InTargetStationsNumber <= 0) return;
+	if (InTargetStationsNumber <= 0) return;
 
 	FStationData TargetStationInfo;
 	if (!StationsDA->FindStationByName(InTargetStationName, TargetStationInfo)) return;
@@ -232,7 +237,7 @@ void AX_BuildingCalculator::CalculateResultProductsByStations(TArray<FObjectInfo
 			Result.ResultProducts.Add(Temp);
 		}
 
-		FStationManufacturedInfo* ManufacturedProductInfo;
+		FStationManufacturedInfo* ManufacturedProductInfo = nullptr;
 		if (Result.FindStationManufacturedProductByName(Station.Name, ManufacturedProductInfo))
 		{
 			ManufacturedProductInfo->ObjectsNumber += CurrentStation.DefaultManufacturedProduct.Numbers * Station.Numbers;
@@ -251,7 +256,7 @@ void AX_BuildingCalculator::CalculateResultProductsByStations(TArray<FObjectInfo
 		if (CurrentStation.ConsumedProducts.IsEmpty()) continue;
 		for (const auto& ConsumedProduct : CurrentStation.ConsumedProducts)
 		{
-			FStationManufacturedInfo* ConsumedProductInfo;
+			FStationManufacturedInfo* ConsumedProductInfo = nullptr;
 			if (Result.FindConsumedProductByName(Station.Name, ConsumedProduct.Name, ConsumedProductInfo))
 			{
 				ConsumedProductInfo->ObjectsNumber += ConsumedProduct.Numbers * Station.Numbers;
@@ -323,14 +328,11 @@ void AX_BuildingCalculator::CalculateCommonWorkforce(FResult& Result)
 
 void AX_BuildingCalculator::RecalculateProductsWithWorkforce(FResult& Result) const
 {
-	// UE_LOG(LogTemp, Error, TEXT("Inside recalculate"));
 	for (auto& Station : Result.StationsManufacturedProducts)
 	{
-		// UE_LOG(LogTemp, Error, TEXT("Check for station %s"), *Station.StationName.ToString());
 		FStationData CurrentStation;
 		if (!StationsDA->FindStationByName(Station.StationName, CurrentStation) || !CurrentStation.StationEfficiencyCanBeUpgrade()) continue;
 
-		// UE_LOG(LogTemp, Error, TEXT("Station %s is can be recalculated"), *Station.StationName.ToString());
 		const int32 Temp = GetProductNumbersByWorkforce(CurrentStation, Result);
 		Station.ObjectsNumber += Temp;
 
@@ -343,14 +345,44 @@ void AX_BuildingCalculator::RecalculateProductsWithWorkforce(FResult& Result) co
 
 int32 AX_BuildingCalculator::GetProductNumbersByWorkforce(const FStationData& InStationInfo, const FResult& Result) const
 {
-	// UE_LOG(LogTemp, Error, TEXT("product: %s"), *InStationInfo..ToString());
-	// UE_LOG(LogTemp, Error, TEXT("Result: %i"), Result.TotalNeededWorkforceNumber);
 	if (Result.TotalAvailableWorkforceNumber == 0 || Result.TotalNeededWorkforceNumber == 0) return 0;
 
 	const float X = static_cast<float>(FMath::Min(Result.TotalAvailableWorkforceNumber, Result.TotalNeededWorkforceNumber)) /
 		(static_cast<float>(Result.TotalNeededWorkforceNumber) / 100);
 	const float Y = static_cast<float>((InStationInfo.MaxManufacturedProductsNumber - InStationInfo.DefaultManufacturedProduct.Numbers)) / 100;
 	return FMath::Floor(X * Y);
+}
+
+void AX_BuildingCalculator::CalculateTotalMoneyPerHour(FResult& Result) const
+{
+	Result.TotalExpensesPerHour = 0;
+	Result.TotalProductionPerHour = 0;
+	Result.TotalProfitPerHour = 0;
+	
+	for (auto& ConsumedProduct : Result.StationsConsumedProducts)
+	{
+		Result.TotalExpensesPerHour += CalculateMoneyForStation(ConsumedProduct, false);
+	}
+	for (auto& ManufacturedProduct : Result.StationsManufacturedProducts)
+	{
+		Result.TotalProductionPerHour += CalculateMoneyForStation(ManufacturedProduct, true);
+	}
+	Result.TotalProfitPerHour = Result.TotalProductionPerHour - Result.TotalExpensesPerHour;
+}
+
+int32 AX_BuildingCalculator::CalculateMoneyForStation(FStationManufacturedInfo& CurrentStation, const bool InIsManufacturedProduct) const
+{
+	if (!ObjectsDA) return 0;
+	
+	FProductInfo CurrentProductData;
+	if (!ObjectsDA->FindObjectByName(CurrentStation.ObjectName, CurrentProductData)) return 0;
+
+	CurrentStation.TotalObjectsCost = CurrentStation.ObjectsNumber * CurrentProductData.Cost;
+	if (!InIsManufacturedProduct)
+	{
+		CurrentStation.TotalObjectsCost *= -1;
+	}
+	return CurrentStation.TotalObjectsCost;
 }
 
 bool AX_BuildingCalculator::CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums)

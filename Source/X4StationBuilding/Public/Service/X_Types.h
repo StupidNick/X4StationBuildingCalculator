@@ -26,6 +26,27 @@ struct FObjectInfo
 	FText Name;
 	UPROPERTY(EditAnywhere)
 	int32 Numbers;
+};
+
+USTRUCT()
+struct FProductInfo
+{
+	GENERATED_BODY()
+
+	FProductInfo(){}
+	FProductInfo(FText InName, int32 InCost)
+	{
+		Name = InName;
+		Cost = InCost;
+	}
+
+	bool operator==(const FProductInfo& left) const
+	{
+		return left.Name.ToString() == Name.ToString() && left.Cost == Cost;
+	}
+
+	UPROPERTY(EditAnywhere)
+	FText Name;
 	UPROPERTY(EditAnywhere)
 	int32 Cost;
 };
@@ -43,14 +64,12 @@ struct FStationManufacturedInfo
 			ObjectName(InObjectName),
 			ObjectsNumber(InObjectNumbers){}
 
-	UPROPERTY(EditAnywhere)
 	FText StationName;
-	UPROPERTY(EditAnywhere)
 	int32 StationsNumber;
-	UPROPERTY(EditAnywhere)
+	
 	FText ObjectName;
-	UPROPERTY(EditAnywhere)
 	int32 ObjectsNumber;
+	int32 TotalObjectsCost;
 };
 
 USTRUCT()
@@ -65,11 +84,8 @@ struct FStationWorkforceInfo
 			StationsNumber(InStationNumbers),
 			WorkforceNumber(InWorkforceNumbers){}
 
-	UPROPERTY(EditAnywhere)
 	FText StationName;
-	UPROPERTY(EditAnywhere)
 	int32 StationsNumber;
-	UPROPERTY(EditAnywhere)
 	int32 WorkforceNumber;
 };
 
@@ -126,9 +142,12 @@ struct FResult
 	TArray<FStationManufacturedInfo> StationsManufacturedProducts;
 
 	TArray<FStationWorkforceInfo> WorkforceInfo;
-	
 	int32 TotalNeededWorkforceNumber;
 	int32 TotalAvailableWorkforceNumber;
+
+	int32 TotalExpensesPerHour;
+	int32 TotalProductionPerHour;
+	int32 TotalProfitPerHour;
 
 	TArray<FText> AllProducts;
 	
@@ -148,7 +167,7 @@ struct FResult
 		return false;
 	}
 
-	bool FindResultProductsByName(const FText& InName, FObjectInfo*& OutProduction)
+	bool FindResultProductsByName(const FText& InName, FObjectInfo*& OutProduction) // TODO ask for this
 	{
 		if (ResultProducts.IsEmpty()) return false;
 		

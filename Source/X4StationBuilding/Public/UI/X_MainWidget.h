@@ -39,6 +39,9 @@ private:
 
 	void SetProductsInfo(FResult& InResult);
 	void SetWorkforceInfo(const FResult& InResult);
+	void SetProductionCostInfo(const FResult& InResult);
+
+	void CreateResourcesPerHourButton(const TArray<FStationManufacturedInfo> InInfo, const int32 InTotalCost);
 
 	void ClearResults();
 	UX_DropDownMenu* AddStationLine();
@@ -87,6 +90,9 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* OutputWorkforceVB;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* OutputProductsCostVB;
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* SelectedStationsVB;
