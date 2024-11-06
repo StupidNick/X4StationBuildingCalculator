@@ -369,7 +369,6 @@ void AX_BuildingCalculator::CalculateTotalMoneyPerHour(FResult& Result) const
 	{
 		Result.TotalProductionPerHour += CalculateManufacturedProductsCost(ManufacturedProduct, Result);
 	}
-	Result.TotalExpensesPerHour *= -1;
 	Result.TotalProfitPerHour = Result.TotalProductionPerHour - FMath::Abs(Result.TotalExpensesPerHour);
 }
 
@@ -380,17 +379,17 @@ int32 AX_BuildingCalculator::CalculateConsumedProductsCost(const FObjectInfo& Cu
 	FProductInfo CurrentProductData;
 	if (!ObjectsDA->FindObjectByName(CurrentConsumedProduct.Name, CurrentProductData)) return 0;
 
-	int32 TotalNumbers = 0;
 	FObjectInfo* ManufacturedProduct = nullptr;
 	if (InResult.FindResultProductsByName(CurrentConsumedProduct.Name, ManufacturedProduct))
 	{
-		TotalNumbers = ManufacturedProduct->Numbers - CurrentConsumedProduct.Numbers;
-		if (TotalNumbers < 0)
-		{
-			InResult.ExpensesProducts.Add(FProductCostInfo(CurrentConsumedProduct.Name, TotalNumbers, TotalNumbers * CurrentProductData.Cost));
-		}
+		const int32 ConsumedNumbers = CurrentConsumedProduct.Numbers - ManufacturedProduct->Numbers;
+		if (ConsumedNumbers <= 0) return 0;
+		
+		InResult.ExpensesProducts.Add(FProductCostInfo(CurrentConsumedProduct.Name, ConsumedNumbers, -ConsumedNumbers * CurrentProductData.Cost));
+		return -ConsumedNumbers * CurrentProductData.Cost;
 	}
-	return TotalNumbers;
+	InResult.ExpensesProducts.Add(FProductCostInfo(CurrentConsumedProduct.Name, CurrentConsumedProduct.Numbers, -CurrentConsumedProduct.Numbers * CurrentProductData.Cost));
+	return -CurrentConsumedProduct.Numbers * CurrentProductData.Cost;
 }
 
 int32 AX_BuildingCalculator::CalculateManufacturedProductsCost(const FObjectInfo& CurrentManufacturedProduct,
@@ -401,17 +400,17 @@ int32 AX_BuildingCalculator::CalculateManufacturedProductsCost(const FObjectInfo
 	FProductInfo CurrentProductData;
 	if (!ObjectsDA->FindObjectByName(CurrentManufacturedProduct.Name, CurrentProductData)) return 0;
 
-	int32 TotalNumbers = 0;
-	FObjectInfo* ManufacturedProduct = nullptr;
-	if (InResult.FindNecessaryProductsByName(CurrentManufacturedProduct.Name, ManufacturedProduct))
+	FObjectInfo* ConsumedProduct = nullptr;
+	if (InResult.FindNecessaryProductsByName(CurrentManufacturedProduct.Name, ConsumedProduct))
 	{
-		TotalNumbers = ManufacturedProduct->Numbers - CurrentManufacturedProduct.Numbers;
-		if (TotalNumbers > 0)
-		{
-			InResult.ProductionsProducts.Add(FProductCostInfo(CurrentManufacturedProduct.Name, TotalNumbers, TotalNumbers * CurrentProductData.Cost));
-		}
+		const int32 ManufacturedNumbers = CurrentManufacturedProduct.Numbers - ConsumedProduct->Numbers;
+		if (ManufacturedNumbers <= 0) return 0;
+
+		InResult.ProductionsProducts.Add(FProductCostInfo(CurrentManufacturedProduct.Name, ManufacturedNumbers, ManufacturedNumbers * CurrentProductData.Cost));
+		return ManufacturedNumbers * CurrentProductData.Cost;
 	}
-	return TotalNumbers;
+	InResult.ProductionsProducts.Add(FProductCostInfo(CurrentManufacturedProduct.Name, CurrentManufacturedProduct.Numbers, CurrentManufacturedProduct.Numbers * CurrentProductData.Cost));
+	return CurrentManufacturedProduct.Numbers * CurrentProductData.Cost;
 }
 
 bool AX_BuildingCalculator::CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums)
