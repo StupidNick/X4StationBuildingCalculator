@@ -35,11 +35,11 @@ void UX_DropDownButton::InitializeWidgetAsProductsInfo(const FText& InName, FRes
 	AmountTextBlock->SetText(FText::AsNumber(ResultProductNumber));
 	if (ResultProductNumber > 0)
 	{
-		SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+		SetTextColor(FLinearColor::Green);
 	}
 	else if (ResultProductNumber < 0)
 	{
-		SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+		SetTextColor(FLinearColor::Red);
 	}
 	
 	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
@@ -77,11 +77,11 @@ void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(const FResult& InResult)
 
 	if (ResultWorkforce > 0)
 	{
-		SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+		SetTextColor(FLinearColor::Green);
 	}
 	else if (ResultWorkforce < 0)
 	{
-		SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+		SetTextColor(FLinearColor::Red);
 	}
 
 	NameTextBlock->SetText(WorkforceName);
@@ -92,12 +92,12 @@ void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FStationM
 {
 	if (InTotalCost > 0)
 	{
-		SetTextColor(FLinearColor(0.0f, 0.0f, 1.0f));
+		SetTextColor(FLinearColor::Blue);
 		NameTextBlock->SetText(ProductionName);
 	}
 	else if (InTotalCost < 0)
 	{
-		SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+		SetTextColor(FLinearColor::Red);
 		NameTextBlock->SetText(ExpensesName);
 	}
 	

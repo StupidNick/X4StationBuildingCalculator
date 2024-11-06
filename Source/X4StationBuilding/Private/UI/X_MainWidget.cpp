@@ -1,6 +1,7 @@
 #include "UI/X_MainWidget.h"
 #include "X_DropDownButtonWD.h"
 #include "X_DropDownMenu.h"
+#include "X_NameWithAmountWD.h"
 #include "Components/Button.h"
 #include "Components/EditableText.h"
 #include "Components/ScrollBox.h"
@@ -115,10 +116,20 @@ void UX_MainWidget::SetWorkforceInfo(const FResult& InResult)
 
 void UX_MainWidget::SetProductionCostInfo(const FResult& InResult)
 {
-	if (!OutputProductsVB) return;
+	if (!OutputProductsVB || !NameWithAmountClass) return;
 
 	CreateResourcesPerHourButton(InResult.StationsConsumedProducts, InResult.TotalExpensesPerHour);
 	CreateResourcesPerHourButton(InResult.StationsManufacturedProducts, InResult.TotalProductionPerHour);
+
+	UX_NameWithAmountWD* ProfitLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
+	if (!ProfitLine) return;
+
+	ProfitLine->SetInfo(ProfitName, InResult.TotalProfitPerHour);
+	ProfitLine->SetTextColor(FLinearColor::Green);
+	ProfitLine->SetPadding(FMargin(10.f, 0.f, 0.f, 0.f));
+	OutputProductsCostVB->AddChild(ProfitLine);
+
+	LinesWithAmount.Add(ProfitLine);
 }
 
 void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FStationManufacturedInfo> InInfo, const int32 InTotalCost)

@@ -34,7 +34,7 @@ void AX_BuildingCalculator::RemoveStationsFromList(const FText& InName, const in
 
 void AX_BuildingCalculator::FillStationsList(TArray<FObjectInfo> InStationsList, FResult& OutResult)
 {
-	if (!!StationsDA) return;
+	if (!StationsDA) return;
 	
 	SelectedStations.Empty();
 	for (const auto Station : InStationsList)
@@ -367,7 +367,7 @@ void AX_BuildingCalculator::CalculateTotalMoneyPerHour(FResult& Result) const
 	{
 		Result.TotalProductionPerHour += CalculateMoneyForStation(ManufacturedProduct, true);
 	}
-	Result.TotalProfitPerHour = Result.TotalProductionPerHour - Result.TotalExpensesPerHour;
+	Result.TotalProfitPerHour = Result.TotalProductionPerHour - FMath::Abs(Result.TotalExpensesPerHour);
 }
 
 int32 AX_BuildingCalculator::CalculateMoneyForStation(FStationManufacturedInfo& CurrentStation, const bool InIsManufacturedProduct) const
@@ -375,7 +375,7 @@ int32 AX_BuildingCalculator::CalculateMoneyForStation(FStationManufacturedInfo& 
 	if (!ObjectsDA) return 0;
 	
 	FProductInfo CurrentProductData;
-	if (!ObjectsDA->FindObjectByName(CurrentStation.ObjectName, CurrentProductData)) return 0;
+	if (!ObjectsDA->FindObjectByName(CurrentStation.ObjectName, CurrentProductData)) return 0; // TODO add found for manufactured and consumed this product and substract 
 
 	CurrentStation.TotalObjectsCost = CurrentStation.ObjectsNumber * CurrentProductData.Cost;
 	if (!InIsManufacturedProduct)

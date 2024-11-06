@@ -54,12 +54,12 @@ void UX_ObjectsListWD::CreateNewLine(const TArray<FStationManufacturedInfo> InSt
 
 		if (bIsPositive)
 		{
-			NewLine->SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Green);
 			NewLine->SetInfo(FText::FromString(Name), Station.ObjectsNumber);
 		}
 		else
 		{
-			NewLine->SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Red);
 			NewLine->SetInfo(FText::FromString(Name), -Station.ObjectsNumber);
 		}
 
@@ -83,12 +83,12 @@ void UX_ObjectsListWD::CreateNewLine(const TArray<FStationWorkforceInfo> InStati
 
 		if (bIsPositive)
 		{
-			NewLine->SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Green);
 			NewLine->SetInfo(FText::FromString(Name), Station.WorkforceNumber);
 		}
 		else
 		{
-			NewLine->SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Red);
 			NewLine->SetInfo(FText::FromString(Name), Station.WorkforceNumber);
 		}
 
@@ -112,12 +112,12 @@ void UX_ObjectsListWD::CreateNewLineForCosts(const TArray<FStationManufacturedIn
 
 		if (bIsPositive)
 		{
-			NewLine->SetTextColor(FLinearColor(0.0f, 0.0f, 1.0f));
+			NewLine->SetTextColor(FLinearColor::Blue);
 			NewLine->SetInfo(FText::FromString(Name), Product.TotalObjectsCost);
 		}
 		else
 		{
-			NewLine->SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Red);
 			NewLine->SetInfo(FText::FromString(Name), Product.TotalObjectsCost);
 		}
 

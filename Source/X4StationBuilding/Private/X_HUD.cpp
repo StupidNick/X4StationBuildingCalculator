@@ -62,7 +62,6 @@ void AX_HUD::CreateMainWidget()
 	});
 	MainWidget->CalculateStationsEvent.BindLambda([&](TArray<FObjectInfo> InStations, FResult& OutResult)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Pass parameters"));
 		OnFillButtonClickedEvent.ExecuteIfBound(InStations, OutResult);
 	});
 }

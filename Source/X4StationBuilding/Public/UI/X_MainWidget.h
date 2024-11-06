@@ -5,6 +5,7 @@
 #include "Service/X_Types.h"
 #include "X_MainWidget.generated.h"
 
+class UX_NameWithAmountWD;
 struct FObjectInfo;
 class UVerticalBox;
 class UScrollBox;
@@ -64,6 +65,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "DropDown")
 	TSubclassOf<UX_DropDownMenu> SelectStationClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
+	TSubclassOf<UX_NameWithAmountWD> NameWithAmountClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
+	FText ProfitName;
 	
 // TextBlocks begin
 	UPROPERTY(meta = (BindWidget))
@@ -105,4 +112,7 @@ private:
 
 	UPROPERTY()
 	TArray<UX_DropDownButton*> DropDownButtons;
+
+	UPROPERTY()
+	TArray<UX_NameWithAmountWD*> LinesWithAmount;
 };
