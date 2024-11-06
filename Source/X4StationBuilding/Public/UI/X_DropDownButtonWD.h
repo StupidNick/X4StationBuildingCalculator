@@ -21,7 +21,7 @@ public:
 
 	void InitializeWidgetAsProductsInfo(const FText& InName, FResult& InResult);
 	void InitializeWidgetAsWorkforceInfo(const FResult& InResult);
-	void InitializeWidgetAsResultCostsInfo(const TArray<FStationManufacturedInfo> InCostInfo, const int32 InTotalCost);
+	void InitializeWidgetAsResultCostsInfo(const TArray<FProductCostInfo>& InCostInfo, const int32 InTotalCost);
 
 private:
 	virtual void NativeOnInitialized() override;

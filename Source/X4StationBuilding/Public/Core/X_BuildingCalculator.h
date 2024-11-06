@@ -20,7 +20,7 @@ public:
 	void ChangeStationsCountInList(const FText& InName, const int32 InOldNums, const int32 InNewNums);
 	void RemoveStationsFromList(const FText& InName, const int32 InNums);
 
-	void FillStationsList(TArray<FObjectInfo> InStationsList, FResult& OutResult);
+	void FillStationsList(TArray<FObjectInfo>& InStationsList, FResult& OutResult);
 	void CalculateStationsAndProductsForSelectedStations();
 	void ClearSelectedStations();
 
@@ -34,7 +34,7 @@ private:
 	void AddNecessaryProductToResult(const FObjectInfo& InConsumedProduct, int32 InTargetStationsNumber, FResult& Result);
 	void AddNecessaryStationToResult(const FStationData& InManufacturedStation, int32 InProductsNumbers, FResult& Result);
 	int32 CalculateNeededNumbersOfStations(int32 NeededProductsNumbers, const FStationData& ManufacturedStation) const;
-	void CalculateResultProductsByStations(TArray<FObjectInfo> InStations, FResult& Result);
+	void CalculateResultProductsByStations(const TArray<FObjectInfo>& InStations, FResult& Result);
 	void CalculateResultProductsAndStations(FResult& Result);
 
 	//Workforce calculation functions
@@ -44,7 +44,8 @@ private:
 
 	//Production credits calculation functions
 	void CalculateTotalMoneyPerHour(FResult& Result) const;
-	int32 CalculateMoneyForStation(FStationManufacturedInfo& Result, const bool InIsManufacturedProduct) const;
+	int32 CalculateConsumedProductsCost(const FObjectInfo& CurrentConsumedProduct, FResult& InResult) const;
+	int32 CalculateManufacturedProductsCost(const FObjectInfo& CurrentManufacturedProduct, FResult& InResult) const;
 
 	//Service functions
 	bool CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums);
@@ -66,8 +67,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 MaxNumsOfStations = 200;
 
-	TArray<FObjectInfo> SelectedStations;
-
 	UPROPERTY()
 	AX_HUD* HUD = nullptr;
+
+private:
+	TArray<FObjectInfo> SelectedStations;
+
+	bool bBaseResourcesProvideByMiners;
+	bool bResourcesProvideByOtherStations;
 };

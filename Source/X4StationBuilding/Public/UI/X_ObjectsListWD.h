@@ -17,14 +17,14 @@ class X4STATIONBUILDING_API UX_ObjectsListWD : public UUserWidget
 
 public:
 
-	void CreateList(const TArray<FStationManufacturedInfo> InManufacturedStations, const TArray<FStationManufacturedInfo> InConsumedStations);
-	void CreateList(const TArray<FStationWorkforceInfo> InManufacturedStations, const TArray<FStationWorkforceInfo> InConsumedStations);
-	void CreateListForCosts(const TArray<FStationManufacturedInfo> InManufacturedStations);
+	void CreateList(const TArray<FStationManufacturedInfo>& InManufacturedStations, const TArray<FStationManufacturedInfo>& InConsumedStations);
+	void CreateList(const TArray<FStationWorkforceInfo>& InManufacturedStations, const TArray<FStationWorkforceInfo>& InConsumedStations);
+	void CreateListForCosts(const TArray<FProductCostInfo>& InManufacturedStations);
 
 private:
-	void CreateNewLine(const TArray<FStationManufacturedInfo> InStations, bool bIsPositive);
-	void CreateNewLine(const TArray<FStationWorkforceInfo> InStations, bool bIsPositive);
-	void CreateNewLineForCosts(const TArray<FStationManufacturedInfo> InProducts, bool bIsPositive);
+	void CreateNewLine(const TArray<FStationManufacturedInfo>& InStations, bool bIsPositive);
+	void CreateNewLine(const TArray<FStationWorkforceInfo>& InStations, bool bIsPositive);
+	void CreateNewLineForCosts(const TArray<FProductCostInfo>& InProducts, bool bIsPositive);
 
 public:
 

@@ -60,7 +60,7 @@ void AX_HUD::CreateMainWidget()
 	{
 		OnClearSelectedListButtonClickedEvent.ExecuteIfBound();
 	});
-	MainWidget->CalculateStationsEvent.BindLambda([&](TArray<FObjectInfo> InStations, FResult& OutResult)
+	MainWidget->CalculateStationsEvent.BindLambda([&](TArray<FObjectInfo>& InStations, FResult& OutResult)
 	{
 		OnFillButtonClickedEvent.ExecuteIfBound(InStations, OutResult);
 	});

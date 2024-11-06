@@ -42,7 +42,7 @@ private:
 	void SetWorkforceInfo(const FResult& InResult);
 	void SetProductionCostInfo(const FResult& InResult);
 
-	void CreateResourcesPerHourButton(const TArray<FStationManufacturedInfo> InInfo, const int32 InTotalCost);
+	void CreateResourcesPerHourButton(const TArray<FProductCostInfo>& InInfo, const int32 InTotalCost);
 
 	void ClearResults();
 	UX_DropDownMenu* AddStationLine();

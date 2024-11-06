@@ -88,7 +88,7 @@ void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(const FResult& InResult)
 	AmountTextBlock->SetText(FText::AsNumber(ResultWorkforce));
 }
 
-void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FStationManufacturedInfo> InCostInfo, const int32 InTotalCost)
+void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FProductCostInfo>& InCostInfo, const int32 InTotalCost)
 {
 	if (InTotalCost > 0)
 	{

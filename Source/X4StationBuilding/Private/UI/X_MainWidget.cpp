@@ -118,8 +118,8 @@ void UX_MainWidget::SetProductionCostInfo(const FResult& InResult)
 {
 	if (!OutputProductsVB || !NameWithAmountClass) return;
 
-	CreateResourcesPerHourButton(InResult.StationsConsumedProducts, InResult.TotalExpensesPerHour);
-	CreateResourcesPerHourButton(InResult.StationsManufacturedProducts, InResult.TotalProductionPerHour);
+	CreateResourcesPerHourButton(InResult.ExpensesProducts, InResult.TotalExpensesPerHour);
+	CreateResourcesPerHourButton(InResult.ProductionsProducts, InResult.TotalProductionPerHour);
 
 	UX_NameWithAmountWD* ProfitLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
 	if (!ProfitLine) return;
@@ -132,7 +132,7 @@ void UX_MainWidget::SetProductionCostInfo(const FResult& InResult)
 	LinesWithAmount.Add(ProfitLine);
 }
 
-void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FStationManufacturedInfo> InInfo, const int32 InTotalCost)
+void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FProductCostInfo>& InInfo, const int32 InTotalCost)
 {
 	UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
 	if (!Button) return;
@@ -150,6 +150,11 @@ void UX_MainWidget::ClearResults()
 	{
 		Button->RemoveFromParent();
 		Button->Destruct();
+	}
+	for (const auto Line : LinesWithAmount)
+	{
+		Line->RemoveFromParent();
+		Line->Destruct();
 	}
 }
 

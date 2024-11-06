@@ -11,7 +11,7 @@ struct FObjectInfo
 	GENERATED_BODY()
 
 	FObjectInfo(){}
-	FObjectInfo(FText InName, int32 InNumbers)
+	FObjectInfo(const FText& InName, const int32 InNumbers)
 	{
 		Name = InName;
 		Numbers = InNumbers;
@@ -34,7 +34,7 @@ struct FProductInfo
 	GENERATED_BODY()
 
 	FProductInfo(){}
-	FProductInfo(FText InName, int32 InCost)
+	FProductInfo(const FText& InName, const int32 InCost)
 	{
 		Name = InName;
 		Cost = InCost;
@@ -48,6 +48,29 @@ struct FProductInfo
 	UPROPERTY(EditAnywhere)
 	FText Name;
 	UPROPERTY(EditAnywhere)
+	int32 Cost;
+};
+
+USTRUCT()
+struct FProductCostInfo
+{
+	GENERATED_BODY()
+
+	FProductCostInfo(){}
+	FProductCostInfo(const FText& InName, const int32 InNumbers, const int32 InCost)
+	{
+		Name = InName;
+		Numbers = InNumbers;
+		Cost = InCost;
+	}
+
+	bool operator==(const FProductCostInfo& left) const
+	{
+		return left.Name.ToString() == Name.ToString() && left.Cost == Cost && left.Numbers == Numbers;
+	}
+
+	FText Name;
+	int32 Numbers;
 	int32 Cost;
 };
 
@@ -69,7 +92,6 @@ struct FStationManufacturedInfo
 	
 	FText ObjectName;
 	int32 ObjectsNumber;
-	int32 TotalObjectsCost;
 };
 
 USTRUCT()
@@ -138,13 +160,18 @@ struct FResult
 	TArray<FObjectInfo> ResultStations;
 	TArray<FObjectInfo> NecessaryStations;
 
+	// Productions details
 	TArray<FStationManufacturedInfo> StationsConsumedProducts;
 	TArray<FStationManufacturedInfo> StationsManufacturedProducts;
 
+	// Workforce info
 	TArray<FStationWorkforceInfo> WorkforceInfo;
 	int32 TotalNeededWorkforceNumber;
 	int32 TotalAvailableWorkforceNumber;
 
+	// Production cost per hour
+	TArray<FProductCostInfo> ExpensesProducts;
+	TArray<FProductCostInfo> ProductionsProducts;
 	int32 TotalExpensesPerHour;
 	int32 TotalProductionPerHour;
 	int32 TotalProfitPerHour;
@@ -325,6 +352,6 @@ DECLARE_DELEGATE_OneParam(FInt32Delegate, int32)
 DECLARE_DELEGATE_OneParam(FResultDelegate, FResult&)
 
 DECLARE_DELEGATE_TwoParams(FTextInt32Delegate, const FText&, const int32)
-DECLARE_DELEGATE_TwoParams(FFillStationsDelegate, TArray<FObjectInfo>, FResult&)
+DECLARE_DELEGATE_TwoParams(FFillStationsDelegate, TArray<FObjectInfo>&, FResult&)
 
 DECLARE_DELEGATE_ThreeParams(FChangeStationsCountDelegate, const FText&, const int32, const int32)
