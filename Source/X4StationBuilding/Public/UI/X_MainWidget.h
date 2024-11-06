@@ -5,6 +5,7 @@
 #include "Service/X_Types.h"
 #include "X_MainWidget.generated.h"
 
+class UX_NameWithAmountWD;
 struct FObjectInfo;
 class UVerticalBox;
 class UScrollBox;
@@ -39,6 +40,9 @@ private:
 
 	void SetProductsInfo(FResult& InResult);
 	void SetWorkforceInfo(const FResult& InResult);
+	void SetProductionCostInfo(const FResult& InResult);
+
+	void CreateResourcesPerHourButton(const TArray<FProductCostInfo>& InInfo, const int32 InTotalCost);
 
 	void ClearResults();
 	UX_DropDownMenu* AddStationLine();
@@ -61,6 +65,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "DropDown")
 	TSubclassOf<UX_DropDownMenu> SelectStationClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
+	TSubclassOf<UX_NameWithAmountWD> NameWithAmountClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
+	FText ProfitName;
 	
 // TextBlocks begin
 	UPROPERTY(meta = (BindWidget))
@@ -89,6 +99,9 @@ public:
 	UVerticalBox* OutputWorkforceVB;
 
 	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* OutputProductsCostVB;
+
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* SelectedStationsVB;
 // Boxes end
 
@@ -99,4 +112,7 @@ private:
 
 	UPROPERTY()
 	TArray<UX_DropDownButton*> DropDownButtons;
+
+	UPROPERTY()
+	TArray<UX_NameWithAmountWD*> LinesWithAmount;
 };

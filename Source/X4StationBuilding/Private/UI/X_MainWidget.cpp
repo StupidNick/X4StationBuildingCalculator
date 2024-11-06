@@ -1,6 +1,7 @@
 #include "UI/X_MainWidget.h"
 #include "X_DropDownButtonWD.h"
 #include "X_DropDownMenu.h"
+#include "X_NameWithAmountWD.h"
 #include "Components/Button.h"
 #include "Components/EditableText.h"
 #include "Components/ScrollBox.h"
@@ -79,10 +80,13 @@ void UX_MainWidget::SetResult(FResult& InResult)
 	
 	SetProductsInfo(InResult);
 	SetWorkforceInfo(InResult);
+	SetProductionCostInfo(InResult);
 }
 
 void UX_MainWidget::SetProductsInfo(FResult& InResult)
 {
+	if (!OutputProductsVB) return;
+	
 	for (const auto Product : InResult.AllProducts)
 	{
 		UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
@@ -98,10 +102,42 @@ void UX_MainWidget::SetProductsInfo(FResult& InResult)
 
 void UX_MainWidget::SetWorkforceInfo(const FResult& InResult)
 {
+	if (!OutputWorkforceVB) return;
+	
 	UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
 	if (!Button) return;
 
-	Button->InitializeWidgetAsWorkforceInfo(InResult.WorkforceInfo);
+	Button->InitializeWidgetAsWorkforceInfo(InResult);
+	Button->SetPadding(DropDownButtonsPadding);
+	OutputWorkforceVB->AddChild(Button);
+	
+	DropDownButtons.Add(Button);
+}
+
+void UX_MainWidget::SetProductionCostInfo(const FResult& InResult)
+{
+	if (!OutputProductsVB || !NameWithAmountClass) return;
+
+	CreateResourcesPerHourButton(InResult.ExpensesProducts, InResult.TotalExpensesPerHour);
+	CreateResourcesPerHourButton(InResult.ProductionsProducts, InResult.TotalProductionPerHour);
+
+	UX_NameWithAmountWD* ProfitLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
+	if (!ProfitLine) return;
+
+	ProfitLine->SetInfo(ProfitName, InResult.TotalProfitPerHour);
+	ProfitLine->SetTextColor(FLinearColor::Green);
+	ProfitLine->SetPadding(FMargin(10.f, 0.f, 0.f, 0.f));
+	OutputProductsCostVB->AddChild(ProfitLine);
+
+	LinesWithAmount.Add(ProfitLine);
+}
+
+void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FProductCostInfo>& InInfo, const int32 InTotalCost)
+{
+	UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
+	if (!Button) return;
+
+	Button->InitializeWidgetAsResultCostsInfo(InInfo, InTotalCost);
 	Button->SetPadding(DropDownButtonsPadding);
 	OutputWorkforceVB->AddChild(Button);
 	
@@ -114,6 +150,11 @@ void UX_MainWidget::ClearResults()
 	{
 		Button->RemoveFromParent();
 		Button->Destruct();
+	}
+	for (const auto Line : LinesWithAmount)
+	{
+		Line->RemoveFromParent();
+		Line->Destruct();
 	}
 }
 

@@ -1,12 +1,12 @@
 #include "X_ObjectsListWD.h"
 #include "X_NameWithAmountWD.h"
-#include "X_ObjectsDA.h"
+#include "X_Types.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 
 
-void UX_ObjectsListWD::CreateList(const TArray<FStationManufacturedInfo> InManufacturedStations,
-	const TArray<FStationManufacturedInfo> InConsumedStations)
+void UX_ObjectsListWD::CreateList(const TArray<FStationManufacturedInfo>& InManufacturedStations,
+	const TArray<FStationManufacturedInfo>& InConsumedStations)
 {
 	Lines.Empty();
 	
@@ -14,8 +14,8 @@ void UX_ObjectsListWD::CreateList(const TArray<FStationManufacturedInfo> InManuf
 	CreateNewLine(InConsumedStations, false);
 }
 
-void UX_ObjectsListWD::CreateList(const TArray<FStationWorkforceInfo> InManufacturedStations,
-	const TArray<FStationWorkforceInfo> InConsumedStations)
+void UX_ObjectsListWD::CreateList(const TArray<FStationWorkforceInfo>& InManufacturedStations,
+	const TArray<FStationWorkforceInfo>& InConsumedStations)
 {
 	Lines.Empty();
 	
@@ -23,9 +23,25 @@ void UX_ObjectsListWD::CreateList(const TArray<FStationWorkforceInfo> InManufact
 	CreateNewLine(InConsumedStations, false);
 }
 
-void UX_ObjectsListWD::CreateNewLine(const TArray<FStationManufacturedInfo> InStations, bool bIsPositive)
+void UX_ObjectsListWD::CreateListForCosts(const TArray<FProductCostInfo>& InCostInfo)
 {
-	if (InStations.IsEmpty()) return;
+	Lines.Empty();
+
+	if (InCostInfo.IsEmpty()) return;
+	
+	if (InCostInfo[0].Cost > 0)
+	{
+		CreateNewLineForCosts(InCostInfo, true);
+	}
+	else
+	{
+		CreateNewLineForCosts(InCostInfo, false);
+	}
+}
+
+void UX_ObjectsListWD::CreateNewLine(const TArray<FStationManufacturedInfo>& InStations, bool bIsPositive)
+{
+	if (InStations.IsEmpty() || !NameWithAmountClass) return;
 	
 	for (const auto Station : InStations)
 	{
@@ -38,12 +54,12 @@ void UX_ObjectsListWD::CreateNewLine(const TArray<FStationManufacturedInfo> InSt
 
 		if (bIsPositive)
 		{
-			NewLine->SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Green);
 			NewLine->SetInfo(FText::FromString(Name), Station.ObjectsNumber);
 		}
 		else
 		{
-			NewLine->SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Red);
 			NewLine->SetInfo(FText::FromString(Name), -Station.ObjectsNumber);
 		}
 
@@ -52,9 +68,9 @@ void UX_ObjectsListWD::CreateNewLine(const TArray<FStationManufacturedInfo> InSt
 	}
 }
 
-void UX_ObjectsListWD::CreateNewLine(const TArray<FStationWorkforceInfo> InStations, bool bIsPositive)
+void UX_ObjectsListWD::CreateNewLine(const TArray<FStationWorkforceInfo>& InStations, bool bIsPositive)
 {
-	if (InStations.IsEmpty()) return;
+	if (InStations.IsEmpty() || !NameWithAmountClass) return;
 	
 	for (const auto Station : InStations)
 	{
@@ -67,13 +83,42 @@ void UX_ObjectsListWD::CreateNewLine(const TArray<FStationWorkforceInfo> InStati
 
 		if (bIsPositive)
 		{
-			NewLine->SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Green);
 			NewLine->SetInfo(FText::FromString(Name), Station.WorkforceNumber);
 		}
 		else
 		{
-			NewLine->SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+			NewLine->SetTextColor(FLinearColor::Red);
 			NewLine->SetInfo(FText::FromString(Name), Station.WorkforceNumber);
+		}
+
+		VerticalBox->AddChild(NewLine);
+		Lines.Add(NewLine);
+	}
+}
+
+void UX_ObjectsListWD::CreateNewLineForCosts(const TArray<FProductCostInfo>& InProducts, bool bIsPositive)
+{
+	if (InProducts.IsEmpty() || !NameWithAmountClass) return;
+	
+	for (const auto Product : InProducts)
+	{
+		UX_NameWithAmountWD* NewLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
+		if (!NewLine) return;
+
+		FString Name = FString::FromInt(Product.Numbers);
+		Name.Append(" x ");
+		Name.Append(Product.Name.ToString());
+
+		if (bIsPositive)
+		{
+			NewLine->SetTextColor(FLinearColor::Blue);
+			NewLine->SetInfo(FText::FromString(Name), Product.Cost);
+		}
+		else
+		{
+			NewLine->SetTextColor(FLinearColor::Red);
+			NewLine->SetInfo(FText::FromString(Name), Product.Cost);
 		}
 
 		VerticalBox->AddChild(NewLine);

@@ -14,8 +14,10 @@ class X4STATIONBUILDING_API UX_ObjectsDA : public UDataAsset
 
 public:
 
-	bool FindObjectByName(const FText& InName, FObjectInfo& OutObject)
+	bool FindObjectByName(const FText& InName, FProductInfo& OutObject) // TODO ask for this
 	{
+		if (Objects.IsEmpty()) return false;
+		
 		for (auto& Object : Objects)
 		{
 			if (Object.Name.ToString() == InName.ToString())
@@ -30,5 +32,5 @@ public:
 public:
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FObjectInfo> Objects;
+	TArray<FProductInfo> Objects;
 };

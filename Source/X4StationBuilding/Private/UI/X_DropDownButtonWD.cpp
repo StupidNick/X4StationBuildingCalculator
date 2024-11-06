@@ -4,6 +4,7 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "X_Types.h"
 
 
 void UX_DropDownButton::NativeOnInitialized()
@@ -34,11 +35,11 @@ void UX_DropDownButton::InitializeWidgetAsProductsInfo(const FText& InName, FRes
 	AmountTextBlock->SetText(FText::AsNumber(ResultProductNumber));
 	if (ResultProductNumber > 0)
 	{
-		SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+		SetTextColor(FLinearColor::Green);
 	}
 	else if (ResultProductNumber < 0)
 	{
-		SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+		SetTextColor(FLinearColor::Red);
 	}
 	
 	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
@@ -50,11 +51,11 @@ void UX_DropDownButton::InitializeWidgetAsProductsInfo(const FText& InName, FRes
 	DetailsVerticalBox->AddChild(List);
 }
 
-void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(TArray<FStationWorkforceInfo> InWorkforceInfo)
+void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(const FResult& InResult)
 {
-	int32 ResultWorkforce = 0;
+	const int32 ResultWorkforce = InResult.TotalAvailableWorkforceNumber - InResult.TotalNeededWorkforceNumber;
 	TArray<FStationWorkforceInfo> PositiveWorkforce, NegativeWorkforce;
-	for (const auto Workforce : InWorkforceInfo)
+	for (const auto Workforce : InResult.WorkforceInfo)
 	{
 		if (Workforce.WorkforceNumber > 0)
 		{
@@ -64,7 +65,6 @@ void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(TArray<FStationWorkforce
 		{
 			NegativeWorkforce.Add(Workforce);
 		}
-		ResultWorkforce += Workforce.WorkforceNumber;
 	}
 
 	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
@@ -77,15 +77,39 @@ void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(TArray<FStationWorkforce
 
 	if (ResultWorkforce > 0)
 	{
-		SetTextColor(FLinearColor(0.0f, 1.0f, 0.0f));
+		SetTextColor(FLinearColor::Green);
 	}
 	else if (ResultWorkforce < 0)
 	{
-		SetTextColor(FLinearColor(1.0f, 0.0f, 0.0f));
+		SetTextColor(FLinearColor::Red);
 	}
 
 	NameTextBlock->SetText(WorkforceName);
 	AmountTextBlock->SetText(FText::AsNumber(ResultWorkforce));
+}
+
+void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FProductCostInfo>& InCostInfo, const int32 InTotalCost)
+{
+	if (InTotalCost > 0)
+	{
+		SetTextColor(FLinearColor::Blue);
+		NameTextBlock->SetText(ProductionName);
+	}
+	else if (InTotalCost < 0)
+	{
+		SetTextColor(FLinearColor::Red);
+		NameTextBlock->SetText(ExpensesName);
+	}
+	
+	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
+	if (!List) return;
+	
+	List->CreateListForCosts(InCostInfo);
+	
+	List->SetVisibility(ESlateVisibility::Collapsed);
+	DetailsVerticalBox->AddChild(List);
+	
+	AmountTextBlock->SetText(FText::AsNumber(InTotalCost));
 }
 
 void UX_DropDownButton::OpenMenu()
