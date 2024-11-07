@@ -104,7 +104,7 @@ void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FProductC
 	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
 	if (!List) return;
 	
-	List->CreateListForCosts(InCostInfo);
+	List->CreateListForProductsCost(InCostInfo);
 	
 	List->SetVisibility(ESlateVisibility::Collapsed);
 	DetailsVerticalBox->AddChild(List);
@@ -112,15 +112,22 @@ void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FProductC
 	AmountTextBlock->SetText(FText::AsNumber(InTotalCost));
 }
 
-void UX_DropDownButton::InitializeWidgetAsStationCostsInfo(const TArray<FStationBuildingInfo>& InCostInfo)
+void UX_DropDownButton::InitializeWidgetAsStationCostsInfo(const FStationBuildingInfo& InCostInfo)
 {
-	for (const auto& Info : InCostInfo)
-	{
-		List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
-		if (!List) return;
+	List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
+	if (!List) return;
 
-		
-	}
+	List->CreateListForResourcesCost(InCostInfo.ObjectsInfo);
+
+	FString StationName = FString::FromInt(InCostInfo.StationsNumber);
+	StationName.Append(" x ");
+	StationName.Append(InCostInfo.StationName.ToString());
+	
+	NameTextBlock->SetText(FText::FromString(StationName));
+	AmountTextBlock->SetText(FText::AsNumber(InCostInfo.TotalCostForCurrentStation));
+
+	List->SetVisibility(ESlateVisibility::Collapsed);
+	DetailsVerticalBox->AddChild(List);
 }
 
 void UX_DropDownButton::OpenMenu()

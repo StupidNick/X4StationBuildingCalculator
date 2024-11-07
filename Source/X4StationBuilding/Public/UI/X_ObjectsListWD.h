@@ -19,7 +19,8 @@ public:
 
 	void CreateList(const TArray<FStationManufacturedInfo>& InManufacturedStations, const TArray<FStationManufacturedInfo>& InConsumedStations);
 	void CreateList(const TArray<FStationWorkforceInfo>& InManufacturedStations, const TArray<FStationWorkforceInfo>& InConsumedStations);
-	void CreateListForCosts(const TArray<FProductCostInfo>& InManufacturedStations);
+	void CreateListForProductsCost(const TArray<FProductCostInfo>& InManufacturedStations);
+	void CreateListForResourcesCost(const TArray<FProductCostInfo>& InResources);
 
 private:
 

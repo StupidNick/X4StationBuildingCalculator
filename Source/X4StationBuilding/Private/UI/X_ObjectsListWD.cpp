@@ -37,7 +37,7 @@ void UX_ObjectsListWD::CreateList(const TArray<FStationWorkforceInfo>& InManufac
 	}
 }
 
-void UX_ObjectsListWD::CreateListForCosts(const TArray<FProductCostInfo>& InCostInfo)
+void UX_ObjectsListWD::CreateListForProductsCost(const TArray<FProductCostInfo>& InCostInfo)
 {
 	Lines.Empty();
 
@@ -56,6 +56,16 @@ void UX_ObjectsListWD::CreateListForCosts(const TArray<FProductCostInfo>& InCost
 		{
 			CreateNewLine(Product.Name, Product.Numbers, Product.Cost, FLinearColor::Red);
 		}
+	}
+}
+
+void UX_ObjectsListWD::CreateListForResourcesCost(const TArray<FProductCostInfo>& InResources)
+{
+	Lines.Empty();
+
+	for (auto Resource : InResources)
+	{
+		CreateNewLine(Resource.Name, Resource.Numbers, Resource.Cost, FLinearColor::White);
 	}
 }
 

@@ -2,12 +2,13 @@
 
 
 
-bool UXDA_Stations::FindStationByName(FText InName, FStationData& Result)
+bool UXDA_Stations::FindStationByName(const FText& InName, FStationData& Result)
 {
 	if (Stations.IsEmpty()) return false;
 	
 	for (auto Element : Stations)
 	{
+		UE_LOG(LogTemp, Error, TEXT("%s != %s"), *Element.StationName.ToString(), *InName.ToString());
 		if (Element.StationName.ToString() == InName.ToString())
 		{
 			Result = Element;
@@ -17,7 +18,7 @@ bool UXDA_Stations::FindStationByName(FText InName, FStationData& Result)
 	return false;
 }
 
-bool UXDA_Stations::FindStationByManufacturedProduct(FText InName, FStationData& Result)
+bool UXDA_Stations::FindStationByManufacturedProduct(const FText& InName, FStationData& Result)
 {
 	if (Stations.IsEmpty()) return false;
 

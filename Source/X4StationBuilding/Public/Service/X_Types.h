@@ -128,6 +128,7 @@ struct FStationBuildingInfo
 	int32 StationsNumber;
 	
 	TArray<FProductCostInfo> ObjectsInfo;
+	int32 TotalCostForCurrentStation;
 };
 
 USTRUCT()

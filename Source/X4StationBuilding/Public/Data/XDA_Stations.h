@@ -14,9 +14,9 @@ class X4STATIONBUILDING_API UXDA_Stations : public UDataAsset
 
 public:
 	UFUNCTION()
-	bool FindStationByName(FText InName, FStationData& Result);
+	bool FindStationByName(const FText& InName, FStationData& Result);
 	UFUNCTION()
-	bool FindStationByManufacturedProduct(FText InName, FStationData& Result);
+	bool FindStationByManufacturedProduct(const FText& InName, FStationData& Result);
 	
 public:
 	UPROPERTY(EditDefaultsOnly)

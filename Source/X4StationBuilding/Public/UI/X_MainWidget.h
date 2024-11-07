@@ -82,6 +82,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Common")
 	FText AllResourcesCheckBoxName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
+	FText TotalCostStationName;
 	
 // TextBlocks begin
 	UPROPERTY(meta = (BindWidget))

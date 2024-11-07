@@ -99,11 +99,16 @@ void AX_BuildingCalculator::CalculateStationsAndProductsForSelectedStations()
 	{
 		CalculateStationsOneLevelDown(Station.Name, Station.Numbers, false, Result);
 	}
-	
+
 	CalculateResultProductsByStations(SelectedStations, Result);
 	CalculateCommonWorkforce(Result);
 	RecalculateProductsWithWorkforce(Result);
 	CalculateTotalMoneyPerHour(Result);
+
+	for (auto Station : SelectedStations)
+	{
+		Result.ResultStations.Add(FObjectInfo(Station.Name, Station.Numbers));
+	}
 	CalculateStationBuildingCost(Result);
 	
 	OnResultCalculated.ExecuteIfBound(Result);
@@ -234,7 +239,6 @@ void AX_BuildingCalculator::CalculateResultProductsByStations(const TArray<FObje
 {
 	for (const auto Station : InStations)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Station: %s"), *Station.Name.ToString());
 		FStationData CurrentStation;
 		if (!StationsDA->FindStationByName(Station.Name, CurrentStation)) continue;
 
@@ -436,29 +440,42 @@ int32 AX_BuildingCalculator::CalculateManufacturedProductsCost(const FObjectInfo
 
 void AX_BuildingCalculator::CalculateStationBuildingCost(FResult& Result)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Inside Calculate Station building cost, result stations: %i"), Result.ResultStations.Num());
 	if (!ObjectsDA) return;
+	UE_LOG(LogTemp, Error, TEXT("Objects DA is valid"));
 
+	int32 TotalCost = 0;
 	for (const auto& Station : Result.ResultStations)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Station %s"), *Station.Name.ToString());
 		FStationData CurrentStation;
 		if (!StationsDA->FindStationByName(Station.Name, CurrentStation)) continue;
+		UE_LOG(LogTemp, Error, TEXT("Station found"));
 
 		Result.StationsBuildingCostInfo.Add(FStationBuildingInfo(Station.Name, Station.Numbers));
 
 		FStationBuildingInfo* CurrentStationBuildingInfo = nullptr;
 		if (!Result.FindStationBuildingCostInfoByStationName(Station.Name, CurrentStationBuildingInfo)) continue;
-		
+		UE_LOG(LogTemp, Error, TEXT("Station added and found"));
+
+		int32 TotalCostForCurrentStation = 0;
 		for (auto Resource : CurrentStation.ResourcesForBuilding)
 		{
+			UE_LOG(LogTemp, Error, TEXT("Resource: %s"), *Resource.Name.ToString());
 			FResourceInfo CurrentProductData;
 			if (!ObjectsDA->FindObjectByName(Resource.Name, CurrentProductData)) continue;
+			UE_LOG(LogTemp, Error, TEXT("Resource found"));
 
 			CurrentStationBuildingInfo->ObjectsInfo.Add(
 					FProductCostInfo(CurrentProductData.Name,
 				Station.Numbers * Resource.Numbers,
 					Station.Numbers * Resource.Numbers * CurrentProductData.Cost));
+			TotalCostForCurrentStation += Station.Numbers * Resource.Numbers * CurrentProductData.Cost;
 		}
+		CurrentStationBuildingInfo->TotalCostForCurrentStation = TotalCostForCurrentStation;
+		TotalCost += TotalCostForCurrentStation;
 	}
+	Result.StationBuildingTotalCost = TotalCost;
 }
 
 bool AX_BuildingCalculator::CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums)
