@@ -64,6 +64,15 @@ void AX_HUD::CreateMainWidget()
 	{
 		OnFillButtonClickedEvent.ExecuteIfBound(InStations, OutResult);
 	});
+
+	MainWidget->OnProvideBasicResourceValueChanged.BindLambda([&](bool InStations)
+	{
+		OnProvideBasicResourcesValueChanged.ExecuteIfBound(InStations);
+	});
+	MainWidget->OnProvideAllResourceValueChanged.BindLambda([&](bool InStations)
+	{
+		OnProvideAllResourcesValueChanged.ExecuteIfBound(InStations);
+	});
 }
 
 void AX_HUD::DestroyMainWidget()

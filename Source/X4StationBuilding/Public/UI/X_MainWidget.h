@@ -5,8 +5,8 @@
 #include "Service/X_Types.h"
 #include "X_MainWidget.generated.h"
 
+class UX_CheckBoxWithText;
 class UX_NameWithAmountWD;
-struct FObjectInfo;
 class UVerticalBox;
 class UScrollBox;
 class UX_DropDownButton;
@@ -14,6 +14,7 @@ class UEditableText;
 class UTextBlock;
 class UX_DropDownMenu;
 class UButton;
+struct FObjectInfo;
 
 UCLASS()
 class X4STATIONBUILDING_API UX_MainWidget : public UUserWidget
@@ -57,6 +58,9 @@ public:
 	
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
 
+	FBoolDelegate OnProvideBasicResourceValueChanged;
+	FBoolDelegate OnProvideAllResourceValueChanged;
+
 	UPROPERTY(EditDefaultsOnly, Category = "DropDown")
 	TSubclassOf<UX_DropDownButton> DropDownButtonClass;
 
@@ -71,6 +75,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Common")
 	FText ProfitName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
+	FText BasicResourcesCheckBoxName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
+	FText AllResourcesCheckBoxName;
 	
 // TextBlocks begin
 	UPROPERTY(meta = (BindWidget))
@@ -86,6 +96,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* ClearSelectedListButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UX_CheckBoxWithText* ProvideBasicResourcesCB;
+	
+	UPROPERTY(meta = (BindWidget))
+	UX_CheckBoxWithText* ProvideAllResourcesCB;
 // Buttons end
 
 // Boxes begin

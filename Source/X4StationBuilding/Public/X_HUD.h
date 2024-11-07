@@ -36,6 +36,9 @@ public:
 	
 	FSimpleDelegate OnClearSelectedListButtonClickedEvent;
 
+	FBoolDelegate OnProvideBasicResourcesValueChanged;
+	FBoolDelegate OnProvideAllResourcesValueChanged;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UX_MainWidget> MainWidgetClass;
 	UPROPERTY()

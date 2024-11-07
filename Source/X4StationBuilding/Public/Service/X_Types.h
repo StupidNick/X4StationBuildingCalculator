@@ -49,6 +49,8 @@ struct FProductInfo
 	FText Name;
 	UPROPERTY(EditAnywhere)
 	int32 Cost;
+	UPROPERTY(EditAnywhere)
+	bool bIsBaseResource;
 };
 
 USTRUCT()
@@ -350,6 +352,7 @@ struct FResult
 DECLARE_DELEGATE_OneParam(FTextDelegate, const FText&)
 DECLARE_DELEGATE_OneParam(FInt32Delegate, int32)
 DECLARE_DELEGATE_OneParam(FResultDelegate, FResult&)
+DECLARE_DELEGATE_OneParam(FBoolDelegate, bool)
 
 DECLARE_DELEGATE_TwoParams(FTextInt32Delegate, const FText&, const int32)
 DECLARE_DELEGATE_TwoParams(FFillStationsDelegate, TArray<FObjectInfo>&, FResult&)

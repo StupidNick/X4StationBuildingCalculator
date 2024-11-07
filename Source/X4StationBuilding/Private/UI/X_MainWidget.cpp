@@ -1,4 +1,6 @@
 #include "UI/X_MainWidget.h"
+
+#include "X_CheckBoxWithText.h"
 #include "X_DropDownButtonWD.h"
 #include "X_DropDownMenu.h"
 #include "X_NameWithAmountWD.h"
@@ -13,11 +15,22 @@ void UX_MainWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (!AutofillButton || !AddStationsButton || !ClearSelectedListButton) return;
+	if (!AutofillButton || !AddStationsButton || !ClearSelectedListButton || !ProvideBasicResourcesCB || !ProvideAllResourcesCB) return;
 	
 	AutofillButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnAutofillButtonClicked);
 	AddStationsButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnAddButtonClicked);
 	ClearSelectedListButton->OnClicked.AddDynamic(this, &UX_MainWidget::OnClearSelectedListButtonClicked);
+
+	ProvideBasicResourcesCB->SetText(BasicResourcesCheckBoxName);
+	ProvideBasicResourcesCB->OnValueChangedEvent.BindLambda([&](bool InValue)
+	{
+		OnProvideBasicResourceValueChanged.ExecuteIfBound(InValue);
+	});
+	ProvideAllResourcesCB->SetText(AllResourcesCheckBoxName);
+	ProvideAllResourcesCB->OnValueChangedEvent.BindLambda([&](bool InValue)
+	{
+		OnProvideAllResourceValueChanged.ExecuteIfBound(InValue);
+	});
 
 	OnAddButtonClicked();
 }
