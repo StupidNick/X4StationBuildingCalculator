@@ -47,6 +47,9 @@ private:
 	int32 CalculateConsumedProductsCost(const FObjectInfo& CurrentConsumedProduct, FResult& InResult) const;
 	int32 CalculateManufacturedProductsCost(const FObjectInfo& CurrentManufacturedProduct, FResult& InResult) const;
 
+	//Station building cost calculation
+	void CalculateStationBuildingCost(FResult& Result);
+
 	//Service functions
 	bool CheckLimitStations(const FObjectInfo& InSelectedStation, const int32 InNums);
 	bool CheckLimitStations(const int32 InNums);

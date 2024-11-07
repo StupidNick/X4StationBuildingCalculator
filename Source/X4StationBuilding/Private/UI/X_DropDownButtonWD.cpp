@@ -112,6 +112,17 @@ void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FProductC
 	AmountTextBlock->SetText(FText::AsNumber(InTotalCost));
 }
 
+void UX_DropDownButton::InitializeWidgetAsStationCostsInfo(const TArray<FStationBuildingInfo>& InCostInfo)
+{
+	for (const auto& Info : InCostInfo)
+	{
+		List = CreateWidget<UX_ObjectsListWD>(GetWorld(), ListClass);
+		if (!List) return;
+
+		
+	}
+}
+
 void UX_DropDownButton::OpenMenu()
 {
 	if (!List) return;

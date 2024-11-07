@@ -22,9 +22,8 @@ public:
 	void CreateListForCosts(const TArray<FProductCostInfo>& InManufacturedStations);
 
 private:
-	void CreateNewLine(const TArray<FStationManufacturedInfo>& InStations, bool bIsPositive);
-	void CreateNewLine(const TArray<FStationWorkforceInfo>& InStations, bool bIsPositive);
-	void CreateNewLineForCosts(const TArray<FProductCostInfo>& InProducts, bool bIsPositive);
+
+	void CreateNewLine(const FText& InName, const int32 InNumbers, const int32 InOtherNumber, const FLinearColor& InTextColor);
 
 public:
 

@@ -42,6 +42,7 @@ private:
 	void SetProductsInfo(FResult& InResult);
 	void SetWorkforceInfo(const FResult& InResult);
 	void SetProductionCostInfo(const FResult& InResult);
+	void SetStationCostInfo(const FResult& InResult);
 
 	void CreateResourcesPerHourButton(const TArray<FProductCostInfo>& InInfo, const int32 InTotalCost);
 
@@ -116,6 +117,9 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* OutputProductsCostVB;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* OutputStationCostVB;
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* SelectedStationsVB;
