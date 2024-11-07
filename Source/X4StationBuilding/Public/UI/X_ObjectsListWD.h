@@ -19,12 +19,12 @@ public:
 
 	void CreateList(const TArray<FStationManufacturedInfo>& InManufacturedStations, const TArray<FStationManufacturedInfo>& InConsumedStations);
 	void CreateList(const TArray<FStationWorkforceInfo>& InManufacturedStations, const TArray<FStationWorkforceInfo>& InConsumedStations);
-	void CreateListForCosts(const TArray<FProductCostInfo>& InManufacturedStations);
+	void CreateListForProductsCost(const TArray<FProductCostInfo>& InManufacturedStations);
+	void CreateListForResourcesCost(const TArray<FProductCostInfo>& InResources);
 
 private:
-	void CreateNewLine(const TArray<FStationManufacturedInfo>& InStations, bool bIsPositive);
-	void CreateNewLine(const TArray<FStationWorkforceInfo>& InStations, bool bIsPositive);
-	void CreateNewLineForCosts(const TArray<FProductCostInfo>& InProducts, bool bIsPositive);
+
+	void CreateNewLine(const FText& InName, const int32 InNumbers, const int32 InOtherNumber, const FLinearColor& InTextColor);
 
 public:
 

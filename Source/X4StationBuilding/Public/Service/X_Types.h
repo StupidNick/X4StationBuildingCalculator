@@ -29,18 +29,18 @@ struct FObjectInfo
 };
 
 USTRUCT()
-struct FProductInfo
+struct FResourceInfo
 {
 	GENERATED_BODY()
 
-	FProductInfo(){}
-	FProductInfo(const FText& InName, const int32 InCost)
+	FResourceInfo(){}
+	FResourceInfo(const FText& InName, const int32 InCost)
 	{
 		Name = InName;
 		Cost = InCost;
 	}
 
-	bool operator==(const FProductInfo& left) const
+	bool operator==(const FResourceInfo& left) const
 	{
 		return left.Name.ToString() == Name.ToString() && left.Cost == Cost;
 	}
@@ -83,7 +83,7 @@ struct FStationManufacturedInfo
 
 	FStationManufacturedInfo(){}
 
-	FStationManufacturedInfo(const FText InStationName, const FText InObjectName, int32 InStationNumbers, int32 InObjectNumbers)
+	FStationManufacturedInfo(const FText& InStationName, const FText& InObjectName, const int32 InStationNumbers, const int32 InObjectNumbers)
 		:	StationName(InStationName),
 			StationsNumber(InStationNumbers),
 			ObjectName(InObjectName),
@@ -103,7 +103,7 @@ struct FStationWorkforceInfo
 
 	FStationWorkforceInfo(){}
 
-	FStationWorkforceInfo(const FText InStationName, int32 InStationNumbers, int32 InWorkforceNumbers)
+	FStationWorkforceInfo(const FText& InStationName, const int32 InStationNumbers, const int32 InWorkforceNumbers)
 		:	StationName(InStationName),
 			StationsNumber(InStationNumbers),
 			WorkforceNumber(InWorkforceNumbers){}
@@ -111,6 +111,24 @@ struct FStationWorkforceInfo
 	FText StationName;
 	int32 StationsNumber;
 	int32 WorkforceNumber;
+};
+
+USTRUCT()
+struct FStationBuildingInfo
+{
+	GENERATED_BODY()
+
+	FStationBuildingInfo(){}
+
+	FStationBuildingInfo(const FText& InStationName, const int32 InStationNumbers)
+		:	StationName(InStationName),
+			StationsNumber(InStationNumbers){}
+
+	FText StationName;
+	int32 StationsNumber;
+	
+	TArray<FProductCostInfo> ObjectsInfo;
+	int32 TotalCostForCurrentStation;
 };
 
 USTRUCT()
@@ -134,7 +152,7 @@ struct FStationData
 	int32 NeededWorkforceNumber;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Building")
-	TArray<FObjectInfo> ObjectsForBuilding;
+	TArray<FObjectInfo> ResourcesForBuilding;
 
 	bool StationNotProduceAnything() const
 	{
@@ -177,6 +195,10 @@ struct FResult
 	int32 TotalExpensesPerHour;
 	int32 TotalProductionPerHour;
 	int32 TotalProfitPerHour;
+
+	// Station building cost
+	TArray<FStationBuildingInfo> StationsBuildingCostInfo;
+	int32 StationBuildingTotalCost;
 
 	TArray<FText> AllProducts;
 	
@@ -294,6 +316,21 @@ struct FResult
 			if (StationsManufacturedProducts[i].StationName.ToString() == InStationName.ToString())
 			{
 				OutStation = &StationsManufacturedProducts[i];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool FindStationBuildingCostInfoByStationName(const FText& InStationName, FStationBuildingInfo*& OutInfo)
+	{
+		if (StationsBuildingCostInfo.IsEmpty()) return false;
+		
+		for (int i = 0; i < StationsBuildingCostInfo.Num(); i++)
+		{
+			if (StationsBuildingCostInfo[i].StationName.ToString() == InStationName.ToString())
+			{
+				OutInfo = &StationsBuildingCostInfo[i];
 				return true;
 			}
 		}

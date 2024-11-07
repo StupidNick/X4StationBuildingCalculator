@@ -9,21 +9,35 @@ void UX_ObjectsListWD::CreateList(const TArray<FStationManufacturedInfo>& InManu
 	const TArray<FStationManufacturedInfo>& InConsumedStations)
 {
 	Lines.Empty();
-	
-	CreateNewLine(InManufacturedStations, true);
-	CreateNewLine(InConsumedStations, false);
+	if (!NameWithAmountClass) return;
+
+	for (const auto Station : InManufacturedStations)
+	{
+		CreateNewLine(Station.StationName, Station.StationsNumber, Station.ObjectsNumber, FLinearColor::Green);
+	}
+	for (const auto Station : InConsumedStations)
+	{
+		CreateNewLine(Station.StationName, Station.StationsNumber, Station.ObjectsNumber, FLinearColor::Red);
+	}
 }
 
 void UX_ObjectsListWD::CreateList(const TArray<FStationWorkforceInfo>& InManufacturedStations,
 	const TArray<FStationWorkforceInfo>& InConsumedStations)
 {
 	Lines.Empty();
-	
-	CreateNewLine(InManufacturedStations, true);
-	CreateNewLine(InConsumedStations, false);
+	if (!NameWithAmountClass) return;
+
+	for (const auto Station : InManufacturedStations)
+	{
+		CreateNewLine(Station.StationName, Station.StationsNumber, Station.WorkforceNumber, FLinearColor::Green);
+	}
+	for (const auto Station : InConsumedStations)
+	{
+		CreateNewLine(Station.StationName, Station.StationsNumber, Station.WorkforceNumber, FLinearColor::Red);
+	}
 }
 
-void UX_ObjectsListWD::CreateListForCosts(const TArray<FProductCostInfo>& InCostInfo)
+void UX_ObjectsListWD::CreateListForProductsCost(const TArray<FProductCostInfo>& InCostInfo)
 {
 	Lines.Empty();
 
@@ -31,97 +45,42 @@ void UX_ObjectsListWD::CreateListForCosts(const TArray<FProductCostInfo>& InCost
 	
 	if (InCostInfo[0].Cost > 0)
 	{
-		CreateNewLineForCosts(InCostInfo, true);
+		for (const auto Product : InCostInfo)
+		{
+			CreateNewLine(Product.Name, Product.Numbers, Product.Cost, FLinearColor::Blue);
+		}
 	}
 	else
 	{
-		CreateNewLineForCosts(InCostInfo, false);
+		for (const auto Product : InCostInfo)
+		{
+			CreateNewLine(Product.Name, Product.Numbers, Product.Cost, FLinearColor::Red);
+		}
 	}
 }
 
-void UX_ObjectsListWD::CreateNewLine(const TArray<FStationManufacturedInfo>& InStations, bool bIsPositive)
+void UX_ObjectsListWD::CreateListForResourcesCost(const TArray<FProductCostInfo>& InResources)
 {
-	if (InStations.IsEmpty() || !NameWithAmountClass) return;
-	
-	for (const auto Station : InStations)
+	Lines.Empty();
+
+	for (auto Resource : InResources)
 	{
-		UX_NameWithAmountWD* NewLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
-		if (!NewLine) return;
-
-		FString Name = FString::FromInt(Station.StationsNumber);
-		Name.Append(" x ");
-		Name.Append(Station.StationName.ToString());
-
-		if (bIsPositive)
-		{
-			NewLine->SetTextColor(FLinearColor::Green);
-			NewLine->SetInfo(FText::FromString(Name), Station.ObjectsNumber);
-		}
-		else
-		{
-			NewLine->SetTextColor(FLinearColor::Red);
-			NewLine->SetInfo(FText::FromString(Name), -Station.ObjectsNumber);
-		}
-
-		VerticalBox->AddChild(NewLine);
-		Lines.Add(NewLine);
+		CreateNewLine(Resource.Name, Resource.Numbers, Resource.Cost, FLinearColor::White);
 	}
 }
 
-void UX_ObjectsListWD::CreateNewLine(const TArray<FStationWorkforceInfo>& InStations, bool bIsPositive)
+void UX_ObjectsListWD::CreateNewLine(const FText& InName, const int32 InNumbers, const int32 InOtherNumber, const FLinearColor& InTextColor)
 {
-	if (InStations.IsEmpty() || !NameWithAmountClass) return;
-	
-	for (const auto Station : InStations)
-	{
-		UX_NameWithAmountWD* NewLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
-		if (!NewLine) return;
+	UX_NameWithAmountWD* NewLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
+	if (!NewLine) return;
 
-		FString Name = FString::FromInt(Station.StationsNumber);
-		Name.Append(" x ");
-		Name.Append(Station.StationName.ToString());
+	FString Name = FString::FromInt(InNumbers);
+	Name.Append(" x ");
+	Name.Append(InName.ToString());
 
-		if (bIsPositive)
-		{
-			NewLine->SetTextColor(FLinearColor::Green);
-			NewLine->SetInfo(FText::FromString(Name), Station.WorkforceNumber);
-		}
-		else
-		{
-			NewLine->SetTextColor(FLinearColor::Red);
-			NewLine->SetInfo(FText::FromString(Name), Station.WorkforceNumber);
-		}
+	NewLine->SetTextColor(InTextColor);
+	NewLine->SetInfo(FText::FromString(Name), InOtherNumber);
 
-		VerticalBox->AddChild(NewLine);
-		Lines.Add(NewLine);
-	}
-}
-
-void UX_ObjectsListWD::CreateNewLineForCosts(const TArray<FProductCostInfo>& InProducts, bool bIsPositive)
-{
-	if (InProducts.IsEmpty() || !NameWithAmountClass) return;
-	
-	for (const auto Product : InProducts)
-	{
-		UX_NameWithAmountWD* NewLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
-		if (!NewLine) return;
-
-		FString Name = FString::FromInt(Product.Numbers);
-		Name.Append(" x ");
-		Name.Append(Product.Name.ToString());
-
-		if (bIsPositive)
-		{
-			NewLine->SetTextColor(FLinearColor::Blue);
-			NewLine->SetInfo(FText::FromString(Name), Product.Cost);
-		}
-		else
-		{
-			NewLine->SetTextColor(FLinearColor::Red);
-			NewLine->SetInfo(FText::FromString(Name), Product.Cost);
-		}
-
-		VerticalBox->AddChild(NewLine);
-		Lines.Add(NewLine);
-	}
+	VerticalBox->AddChild(NewLine);
+	Lines.Add(NewLine);
 }

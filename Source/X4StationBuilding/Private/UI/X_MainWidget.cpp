@@ -94,6 +94,7 @@ void UX_MainWidget::SetResult(FResult& InResult)
 	SetProductsInfo(InResult);
 	SetWorkforceInfo(InResult);
 	SetProductionCostInfo(InResult);
+	SetStationCostInfo(InResult);
 }
 
 void UX_MainWidget::SetProductsInfo(FResult& InResult)
@@ -143,6 +144,31 @@ void UX_MainWidget::SetProductionCostInfo(const FResult& InResult)
 	OutputProductsCostVB->AddChild(ProfitLine);
 
 	LinesWithAmount.Add(ProfitLine);
+}
+
+void UX_MainWidget::SetStationCostInfo(const FResult& InResult)
+{
+	if (!OutputStationCostVB) return;
+
+	for (auto StationBuildingInfo : InResult.StationsBuildingCostInfo)
+	{
+		UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
+		if (!Button) return;
+
+		Button->InitializeWidgetAsStationCostsInfo(StationBuildingInfo);
+		Button->SetPadding(DropDownButtonsPadding);
+		OutputStationCostVB->AddChild(Button);
+	
+		DropDownButtons.Add(Button);
+	}
+	UX_NameWithAmountWD* TotalLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
+	if (!TotalLine) return;
+
+	TotalLine->SetInfo(TotalCostStationName, InResult.StationBuildingTotalCost);
+	TotalLine->SetPadding(DropDownButtonsPadding);
+	OutputStationCostVB->AddChild(TotalLine);
+
+	LinesWithAmount.Add(TotalLine);
 }
 
 void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FProductCostInfo>& InInfo, const int32 InTotalCost)
