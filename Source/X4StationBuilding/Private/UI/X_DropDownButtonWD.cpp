@@ -95,7 +95,7 @@ void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FProductC
 		SetTextColor(FLinearColor::Blue);
 		NameTextBlock->SetText(ProductionName);
 	}
-	else if (InTotalCost < 0)
+	else if (InTotalCost <= 0)
 	{
 		SetTextColor(FLinearColor::Red);
 		NameTextBlock->SetText(ExpensesName);

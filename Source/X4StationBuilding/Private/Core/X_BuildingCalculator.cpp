@@ -129,6 +129,17 @@ void AX_BuildingCalculator::BeginPlay()
 
 	HUD->OnFillButtonClickedEvent.BindUObject(this, &AX_BuildingCalculator::FillStationsList);
 	HUD->OnClearSelectedListButtonClickedEvent.BindUObject(this, &AX_BuildingCalculator::ClearSelectedStations);
+	
+	HUD->OnProvideBasicResourcesValueChanged.BindLambda([&](bool InValue)
+	{
+		bBaseResourcesProvideByMiners = InValue;
+		CalculateStationsAndProductsForSelectedStations();
+	});
+	HUD->OnProvideAllResourcesValueChanged.BindLambda([&](bool InValue)
+	{
+		bResourcesProvideByOtherStations = InValue;
+		CalculateStationsAndProductsForSelectedStations();
+	});
 
 	HUD->SetCalculator(this);
 }
@@ -360,11 +371,15 @@ void AX_BuildingCalculator::CalculateTotalMoneyPerHour(FResult& Result) const
 	Result.TotalProfitPerHour = 0;
 	Result.ExpensesProducts.Empty();
 	Result.ProductionsProducts.Empty();
-	
-	for (auto& ConsumedProduct : Result.NecessaryProducts)
+
+	if (!bResourcesProvideByOtherStations)
 	{
-		Result.TotalExpensesPerHour += CalculateConsumedProductsCost(ConsumedProduct, Result);
+		for (auto& ConsumedProduct : Result.NecessaryProducts)
+		{
+			Result.TotalExpensesPerHour += CalculateConsumedProductsCost(ConsumedProduct, Result);
+		}
 	}
+	
 	for (auto& ManufacturedProduct : Result.ResultProducts)
 	{
 		Result.TotalProductionPerHour += CalculateManufacturedProductsCost(ManufacturedProduct, Result);
@@ -377,7 +392,8 @@ int32 AX_BuildingCalculator::CalculateConsumedProductsCost(const FObjectInfo& Cu
 	if (!ObjectsDA) return 0;
 	
 	FProductInfo CurrentProductData;
-	if (!ObjectsDA->FindObjectByName(CurrentConsumedProduct.Name, CurrentProductData)) return 0;
+	if (!ObjectsDA->FindObjectByName(CurrentConsumedProduct.Name, CurrentProductData) ||
+		(bBaseResourcesProvideByMiners && CurrentProductData.bIsBaseResource)) return 0;
 
 	FObjectInfo* ManufacturedProduct = nullptr;
 	if (InResult.FindResultProductsByName(CurrentConsumedProduct.Name, ManufacturedProduct))
