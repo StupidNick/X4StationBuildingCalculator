@@ -1,8 +1,8 @@
 #include "X_ObjectsListWD.h"
 #include "X_NameWithAmountWD.h"
 #include "X_Types.h"
+#include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
-#include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 
 
@@ -82,8 +82,12 @@ void UX_ObjectsListWD::CreateNewLine(const FText& InName, const int32 InNumbers,
 	NewLine->SetTextColor(InTextColor);
 	NewLine->SetInfo(FText::FromString(Name), InOtherNumber);
 
-	UBorder* Border = 
-
-	VerticalBox->AddChild(NewLine);
+	UBorder* Border = WidgetTree->ConstructWidget<UBorder>();
+	if (!Border) return;
+	
+	Border->SetBrush(SeparatorBorderStyle);
+	
+	Border->AddChild(NewLine);
+	VerticalBox->AddChild(Border);
 	Lines.Add(NewLine);
 }
