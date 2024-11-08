@@ -107,7 +107,7 @@ void UX_MainWidget::SetProductsInfo(FResult& InResult)
 		if (!Button) continue;
 
 		Button->InitializeWidgetAsProductsInfo(Product, InResult);
-		Button->SetPadding(DropDownButtonsPadding);
+		// Button->SetPadding(DropDownButtonsPadding);
 		OutputProductsVB->AddChild(Button);
 		
 		DropDownButtons.Add(Button);
@@ -122,7 +122,7 @@ void UX_MainWidget::SetWorkforceInfo(const FResult& InResult)
 	if (!Button) return;
 
 	Button->InitializeWidgetAsWorkforceInfo(InResult);
-	Button->SetPadding(DropDownButtonsPadding);
+	// Button->SetPadding(DropDownButtonsPadding);
 	OutputWorkforceVB->AddChild(Button);
 	
 	DropDownButtons.Add(Button);
@@ -156,7 +156,7 @@ void UX_MainWidget::SetStationCostInfo(const FResult& InResult)
 		if (!Button) return;
 
 		Button->InitializeWidgetAsStationCostsInfo(StationBuildingInfo);
-		Button->SetPadding(DropDownButtonsPadding);
+		// Button->SetPadding(DropDownButtonsPadding);
 		OutputStationCostVB->AddChild(Button);
 	
 		DropDownButtons.Add(Button);
@@ -165,7 +165,7 @@ void UX_MainWidget::SetStationCostInfo(const FResult& InResult)
 	if (!TotalLine) return;
 
 	TotalLine->SetInfo(TotalCostStationName, InResult.StationBuildingTotalCost);
-	TotalLine->SetPadding(DropDownButtonsPadding);
+	// TotalLine->SetPadding(DropDownButtonsPadding);
 	OutputStationCostVB->AddChild(TotalLine);
 
 	LinesWithAmount.Add(TotalLine);
@@ -177,7 +177,7 @@ void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FProductCostInfo>&
 	if (!Button) return;
 
 	Button->InitializeWidgetAsResultCostsInfo(InInfo, InTotalCost);
-	Button->SetPadding(DropDownButtonsPadding);
+	// Button->SetPadding(DropDownButtonsPadding);
 	OutputWorkforceVB->AddChild(Button);
 	
 	DropDownButtons.Add(Button);

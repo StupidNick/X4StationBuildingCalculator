@@ -1,6 +1,7 @@
 #include "X_ObjectsListWD.h"
 #include "X_NameWithAmountWD.h"
 #include "X_Types.h"
+#include "Components/Border.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 
@@ -80,6 +81,8 @@ void UX_ObjectsListWD::CreateNewLine(const FText& InName, const int32 InNumbers,
 
 	NewLine->SetTextColor(InTextColor);
 	NewLine->SetInfo(FText::FromString(Name), InOtherNumber);
+
+	UBorder* Border = 
 
 	VerticalBox->AddChild(NewLine);
 	Lines.Add(NewLine);
