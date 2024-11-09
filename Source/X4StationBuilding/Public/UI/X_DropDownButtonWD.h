@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "X_Types.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Image.h"
 #include "X_DropDownButtonWD.generated.h"
 
 
@@ -44,6 +45,9 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* AmountTextBlock;
+	
+	UPROPERTY(meta = (BindWidget))
+	UImage* ArrowImage;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UX_ObjectsListWD> ListClass;
@@ -56,6 +60,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	FText ProductionName;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture2D* ArrowUpTexture;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture2D* ArrowDownTexture;
 
 private:
 

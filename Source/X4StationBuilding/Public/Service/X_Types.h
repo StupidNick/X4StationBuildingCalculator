@@ -154,6 +154,9 @@ struct FStationData
 	UPROPERTY(EditDefaultsOnly, Category = "Building")
 	TArray<FObjectInfo> ResourcesForBuilding;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Common")
+	int32 SortID;
+
 	bool StationNotProduceAnything() const
 	{
 		if (DefaultManufacturedProduct.Name.ToString() == "None" ||

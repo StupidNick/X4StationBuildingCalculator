@@ -21,6 +21,9 @@ public:
 
 	void CreateList(UXDA_Stations* InStationsDA);
 
+private:
+	void CreateCategory(UXDA_Stations* InStationsDA, const int32 InCurrentCategoryID) const;
+
 public:
 
 	FTextDelegate OnStationSelected;

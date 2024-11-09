@@ -31,6 +31,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* VerticalBox;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Style")
+	FSlateBrush SeparatorBorderStyle;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UX_NameWithAmountWD> NameWithAmountClass;
 

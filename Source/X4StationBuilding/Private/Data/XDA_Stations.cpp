@@ -1,5 +1,5 @@
 #include "XDA_Stations.h"
-
+#include "UObject/ObjectSaveContext.h"
 
 
 bool UXDA_Stations::FindStationByName(const FText& InName, FStationData& Result)
@@ -31,4 +31,29 @@ bool UXDA_Stations::FindStationByManufacturedProduct(const FText& InName, FStati
 		}
 	}
 	return false;
+}
+
+void UXDA_Stations::PostSaveRoot(FObjectPostSaveRootContext ObjectSaveContext)
+{
+	Super::PostSaveRoot(ObjectSaveContext);
+
+	SortStationsByCategory();
+}
+
+void UXDA_Stations::SortStationsByCategory()
+{
+	if (Stations.IsEmpty()) return;
+
+	for (int i = 0; i < Stations.Num(); i++) 
+	{
+		for (int j = 0; j < Stations.Num() - 1; j++) 
+		{
+			if (Stations[j].SortID > Stations[j + 1].SortID) 
+			{
+				const FStationData b = Stations[j];
+				Stations[j] = Stations[j + 1];
+				Stations[j + 1] = b;
+			}
+		}
+	}
 }
