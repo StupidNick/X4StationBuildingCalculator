@@ -14,7 +14,7 @@ void UX_DropDownMenu::NativeOnInitialized()
 	if (!OpenButton || !MenuAnchor || !ButtonTextBlock || !CountTextBlock || !DestroyButton) return;
 	
 	MenuAnchor->OnGetUserMenuContentEvent.BindDynamic(this, &UX_DropDownMenu::OnMenuOpen);
-	OpenButton->OnClicked.AddDynamic(this, &UX_DropDownMenu::OpenMenu);
+	OpenButton->OnReleased.AddDynamic(this, &UX_DropDownMenu::OpenMenu);
 	DestroyButton->OnClicked.AddDynamic(this, &UX_DropDownMenu::DestroyMenu);
 	CountTextBlock->OnEditedTextChangedEvent.BindUObject(this, &UX_DropDownMenu::OnCountChanged);
 
@@ -69,8 +69,12 @@ FObjectInfo UX_DropDownMenu::GetStationInfo() const
 
 void UX_DropDownMenu::OpenMenu()
 {
-	if (!MenuAnchor || MenuAnchor->IsOpen()) return;
-
+	if (!MenuAnchor) return;
+	if (MenuAnchor->IsOpen())
+	{
+		MenuAnchor->Close();
+		return;
+	}
 	MenuAnchor->Open(true);
 }
 

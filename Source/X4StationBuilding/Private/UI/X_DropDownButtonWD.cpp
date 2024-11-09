@@ -14,6 +14,7 @@ void UX_DropDownButton::NativeOnInitialized()
 	if (!OpenButton) return;
 	
 	OpenButton->OnClicked.AddDynamic(this, &UX_DropDownButton::OpenMenu);
+	ArrowImage->SetBrushFromTexture(ArrowDownTexture);
 }
 
 void UX_DropDownButton::InitializeWidgetAsProductsInfo(const FText& InName, FResult& InResult)
@@ -132,14 +133,16 @@ void UX_DropDownButton::InitializeWidgetAsStationCostsInfo(const FStationBuildin
 
 void UX_DropDownButton::OpenMenu()
 {
-	if (!List) return;
+	if (!List || !ArrowImage || !ArrowDownTexture || !ArrowUpTexture) return;
 
 	if (bIsOpen)
 	{
+		ArrowImage->SetBrushFromTexture(ArrowDownTexture);
 		List->SetVisibility(ESlateVisibility::Collapsed);
 		bIsOpen = false;
 		return;
 	}
+	ArrowImage->SetBrushFromTexture(ArrowUpTexture);
 	List->SetVisibility(ESlateVisibility::Visible);
 	bIsOpen = true;
 }
