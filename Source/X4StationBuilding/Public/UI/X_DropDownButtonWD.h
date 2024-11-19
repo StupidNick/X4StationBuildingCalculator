@@ -22,7 +22,7 @@ public:
 
 	void InitializeWidgetAsProductsInfo(const FText& InName, FResult& InResult);
 	void InitializeWidgetAsWorkforceInfo(const FResult& InResult);
-	void InitializeWidgetAsResultCostsInfo(const TArray<FProductCostInfo>& InCostInfo, const int32 InTotalCost);
+	void InitializeWidgetAsResultCostsInfo(const TArray<FProductCostInfo>& InCostInfo, const int32 InTotalCost, const bool InIsExpensesProducts);
 	void InitializeWidgetAsStationCostsInfo(const FStationBuildingInfo& InCostInfo);
 
 private:

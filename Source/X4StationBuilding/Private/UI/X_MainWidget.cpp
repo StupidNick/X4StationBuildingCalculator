@@ -75,7 +75,7 @@ void UX_MainWidget::ClearSelectedStationsList()
 {
 	if (SelectedStations.IsEmpty()) return;
 
-	for (const auto Station : SelectedStations)
+	for (const auto& Station : SelectedStations)
 	{
 		Station->RemoveFromParent();
 		Station->Destruct();
@@ -101,7 +101,7 @@ void UX_MainWidget::SetProductsInfo(FResult& InResult)
 {
 	if (!OutputProductsVB) return;
 	
-	for (const auto Product : InResult.AllProducts)
+	for (const auto& Product : InResult.AllProducts)
 	{
 		UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
 		if (!Button) continue;
@@ -130,8 +130,8 @@ void UX_MainWidget::SetProductionCostInfo(const FResult& InResult)
 {
 	if (!OutputProductsVB || !NameWithAmountClass) return;
 
-	CreateResourcesPerHourButton(InResult.ExpensesProducts, InResult.TotalExpensesPerHour);
-	CreateResourcesPerHourButton(InResult.ProductionsProducts, InResult.TotalProductionPerHour);
+	CreateResourcesPerHourButton(InResult.ExpensesProducts, InResult.TotalExpensesPerHour, true);
+	CreateResourcesPerHourButton(InResult.ProductionsProducts, InResult.TotalProductionPerHour, false);
 
 	UX_NameWithAmountWD* ProfitLine = CreateWidget<UX_NameWithAmountWD>(GetWorld(), NameWithAmountClass);
 	if (!ProfitLine) return;
@@ -167,12 +167,12 @@ void UX_MainWidget::SetStationCostInfo(const FResult& InResult)
 	LinesWithAmount.Add(TotalLine);
 }
 
-void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FProductCostInfo>& InInfo, const int32 InTotalCost)
+void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FProductCostInfo>& InInfo, const int32 InTotalCost, const bool InIsExpensesProduct)
 {
 	UX_DropDownButton* Button = CreateWidget<UX_DropDownButton>(GetWorld(), DropDownButtonClass);
 	if (!Button) return;
 
-	Button->InitializeWidgetAsResultCostsInfo(InInfo, InTotalCost);
+	Button->InitializeWidgetAsResultCostsInfo(InInfo, InTotalCost, InIsExpensesProduct);
 	OutputWorkforceVB->AddChild(Button);
 	
 	DropDownButtons.Add(Button);
@@ -180,12 +180,12 @@ void UX_MainWidget::CreateResourcesPerHourButton(const TArray<FProductCostInfo>&
 
 void UX_MainWidget::ClearResults()
 {
-	for (const auto Button : DropDownButtons)
+	for (const auto& Button : DropDownButtons)
 	{
 		Button->RemoveFromParent();
 		Button->Destruct();
 	}
-	for (const auto Line : LinesWithAmount)
+	for (const auto& Line : LinesWithAmount)
 	{
 		Line->RemoveFromParent();
 		Line->Destruct();

@@ -56,7 +56,7 @@ void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(const FResult& InResult)
 {
 	const int32 ResultWorkforce = InResult.TotalAvailableWorkforceNumber - InResult.TotalNeededWorkforceNumber;
 	TArray<FStationWorkforceInfo> PositiveWorkforce, NegativeWorkforce;
-	for (const auto Workforce : InResult.WorkforceInfo)
+	for (const auto& Workforce : InResult.WorkforceInfo)
 	{
 		if (Workforce.WorkforceNumber > 0)
 		{
@@ -89,14 +89,15 @@ void UX_DropDownButton::InitializeWidgetAsWorkforceInfo(const FResult& InResult)
 	AmountTextBlock->SetText(FText::AsNumber(ResultWorkforce));
 }
 
-void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FProductCostInfo>& InCostInfo, const int32 InTotalCost)
+void UX_DropDownButton::InitializeWidgetAsResultCostsInfo(const TArray<FProductCostInfo>& InCostInfo,
+	const int32 InTotalCost, const bool InIsExpensesProducts)
 {
-	if (InTotalCost > 0)
+	if (!InIsExpensesProducts)
 	{
 		SetTextColor(FLinearColor::Blue);
 		NameTextBlock->SetText(ProductionName);
 	}
-	else if (InTotalCost <= 0)
+	else
 	{
 		SetTextColor(FLinearColor::Red);
 		NameTextBlock->SetText(ExpensesName);

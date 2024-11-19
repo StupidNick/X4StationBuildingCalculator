@@ -33,6 +33,7 @@ bool UXDA_Stations::FindStationByManufacturedProduct(const FText& InName, FStati
 	return false;
 }
 
+#if WITH_EDITOR
 void UXDA_Stations::PostSaveRoot(FObjectPostSaveRootContext ObjectSaveContext)
 {
 	Super::PostSaveRoot(ObjectSaveContext);
@@ -57,3 +58,4 @@ void UXDA_Stations::SortStationsByCategory()
 		}
 	}
 }
+#endif

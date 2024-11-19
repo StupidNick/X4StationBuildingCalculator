@@ -12,11 +12,11 @@ void UX_ObjectsListWD::CreateList(const TArray<FStationManufacturedInfo>& InManu
 	Lines.Empty();
 	if (!NameWithAmountClass) return;
 
-	for (const auto Station : InManufacturedStations)
+	for (const auto& Station : InManufacturedStations)
 	{
 		CreateNewLine(Station.StationName, Station.StationsNumber, Station.ObjectsNumber, FLinearColor::Green);
 	}
-	for (const auto Station : InConsumedStations)
+	for (const auto& Station : InConsumedStations)
 	{
 		CreateNewLine(Station.StationName, Station.StationsNumber, Station.ObjectsNumber, FLinearColor::Red);
 	}
@@ -28,11 +28,11 @@ void UX_ObjectsListWD::CreateList(const TArray<FStationWorkforceInfo>& InManufac
 	Lines.Empty();
 	if (!NameWithAmountClass) return;
 
-	for (const auto Station : InManufacturedStations)
+	for (const auto& Station : InManufacturedStations)
 	{
 		CreateNewLine(Station.StationName, Station.StationsNumber, Station.WorkforceNumber, FLinearColor::Green);
 	}
-	for (const auto Station : InConsumedStations)
+	for (const auto& Station : InConsumedStations)
 	{
 		CreateNewLine(Station.StationName, Station.StationsNumber, Station.WorkforceNumber, FLinearColor::Red);
 	}
@@ -46,14 +46,14 @@ void UX_ObjectsListWD::CreateListForProductsCost(const TArray<FProductCostInfo>&
 	
 	if (InCostInfo[0].Cost > 0)
 	{
-		for (const auto Product : InCostInfo)
+		for (const auto& Product : InCostInfo)
 		{
 			CreateNewLine(Product.Name, Product.Numbers, Product.Cost, FLinearColor::Blue);
 		}
 	}
 	else
 	{
-		for (const auto Product : InCostInfo)
+		for (const auto& Product : InCostInfo)
 		{
 			CreateNewLine(Product.Name, Product.Numbers, Product.Cost, FLinearColor::Red);
 		}
