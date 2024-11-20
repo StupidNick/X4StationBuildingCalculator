@@ -3,13 +3,13 @@
 #include "XDA_Stations.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
+#include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
-#include "Components/VerticalBox.h"
 
 
 void UX_StationsList::CreateList(UXDA_Stations* InStationsDA)
 {
-	if (!InStationsDA || !VerticalBox) return;
+	if (!InStationsDA || !ScrollBox) return;
 
 	int32 CurrentStationID = -1;
 	for (int i = 0; i < InStationsDA->Stations.Num(); i++)
@@ -28,7 +28,7 @@ void UX_StationsList::CreateList(UXDA_Stations* InStationsDA)
 		{
 			OnStationSelected.ExecuteIfBound(InText);
 		});
-		VerticalBox->AddChild(NewButton);
+		ScrollBox->AddChild(NewButton);
 		Buttons.Add(NewButton);
 	}
 }
@@ -42,10 +42,10 @@ void UX_StationsList::CreateCategory(UXDA_Stations* InStationsDA, const int32 In
 	if (!Category) return;
 	
 	Text->SetText(*Category);
-	VerticalBox->AddChild(Text);
+	ScrollBox->AddChild(Text);
 		
 	if (UBorder* Border = WidgetTree->ConstructWidget<UBorder>())
 	{
-		VerticalBox->AddChild(Border);
+		ScrollBox->AddChild(Border);
 	}
 }

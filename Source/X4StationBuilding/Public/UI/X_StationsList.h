@@ -31,9 +31,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UScrollBox* ScrollBox;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UVerticalBox* VerticalBox;
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UX_ButtonWithText> ButtonClass;
 
